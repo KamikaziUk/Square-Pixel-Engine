@@ -1,7 +1,6 @@
 #pragma once
 
-namespace Core {
-
+namespace SquareEngine
+{
 	void PrintHelloWorld();
-
 }
