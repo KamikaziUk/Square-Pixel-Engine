@@ -12,17 +12,20 @@
 #include "Emulator/emulator_input.h"
 #include "game_santa.h"
 
+// Engine data
 ScreenData screenData = {};
-GameSanta gameSanta = {};
-
-LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
-void RenderToScreen(HWND hwnd, HDC hdc, float dt);
 
 MSG msg;
 cs_context_t* ctx;
 HWND window;
 HDC hdc;
 
+int scaleWindow = 2;
+bool isRunning = true;
+XInputController controller0 = XInputController::SetupController(0);
+KeyboardMouse keyboardMouse = KeyboardMouse::Setup();
+
+// Emulator data
 enum EmulatorState
 {
     Intro,
@@ -31,22 +34,16 @@ enum EmulatorState
 };
 
 EmulatorState emuState = EmulatorState::Intro;
-
 EmulatorRendering emuRe = {};
 
+// Render cameras
 int camerasSize = 0;
 CameraRect* cameras = nullptr;
-
 float gameCameraXSpeed = 0;
 float gameCameraYSpeed = 0;
 
-int scaleWindow = 2;
-
-bool isRunning = true;
-
-XInputController controller0 = XInputController::SetupController(0);
-
-KeyboardMouse keyboardMouse = KeyboardMouse::Setup();
+// Game
+GameSanta gameSanta = {};
 
 void CameraMovement()
 {
@@ -84,6 +81,40 @@ float current_ticks = 0, delta_ticks = 0;
 float begin = 0;
 float fps = 0;
 float dt = 0;
+
+void RenderToScreen(HWND hwnd, HDC hdc, float dt)
+{
+    memset(screenData.memory, 0, screenData.nativeWidth * screenData.nativeHeight * 4);
+    memset(screenData.sortDepthBuffer, 0, (screenData.nativeWidth * screenData.nativeHeight) * sizeof(int));
+
+    int screenSize = screenData.nativeWidth * screenData.nativeHeight * 4;
+
+    EmulatorRender(&screenData, screenSize, &emuRe, dt);
+
+    if(emuState == EmulatorState::SantaGameUpdate)
+    {
+        OnSantaRender(&gameSanta, &cameras[1], &screenData, screenSize);
+    }
+    else if(emuState == EmulatorState::Intro)
+    {
+        EmulatorRenderIntro(&screenData, screenSize, &emuRe, dt);
+    }
+
+    StretchDIBits(hdc,
+        0,
+        screenData.targetHeight,
+        screenData.targetWidth,
+        -screenData.targetHeight,
+        0,
+        0,
+        screenData.nativeWidth,
+        screenData.nativeHeight,
+        screenData.memory,
+        &screenData.bitmap_info,
+        DIB_RGB_COLORS,
+        SRCCOPY
+    );
+}
 
 void MainLoop()
 {
@@ -135,6 +166,23 @@ void MainLoop()
     {
         fps = CLOCKS_PER_SEC / delta_ticks;
     }
+}
+
+LRESULT CALLBACK WndProc(HWND hwnd, UINT msg,
+    WPARAM wParam, LPARAM lParam)
+{
+    switch(msg)
+    {
+        case WM_PAINT:
+        break;
+
+        case WM_DESTROY:
+        isRunning = false;
+        PostQuitMessage(0);
+        return 0;
+    }
+
+    return DefWindowProcW(hwnd, msg, wParam, lParam);
 }
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLine, int nCmdShow)
@@ -240,55 +288,4 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLin
     srand((unsigned int)time(NULL));
 
     return 0;
-}
-
-void RenderToScreen(HWND hwnd, HDC hdc, float dt)
-{
-    memset(screenData.memory, 0, screenData.nativeWidth * screenData.nativeHeight * 4);
-    memset(screenData.sortDepthBuffer, 0, (screenData.nativeWidth * screenData.nativeHeight) * sizeof(int));
-
-    int screenSize = screenData.nativeWidth * screenData.nativeHeight * 4;
-
-    EmulatorRender(&screenData, screenSize, &emuRe, dt);
-
-    if(emuState == EmulatorState::SantaGameUpdate)
-    {
-        OnSantaRender(&gameSanta, &cameras[1], &screenData, screenSize);
-    }
-    else if(emuState == EmulatorState::Intro)
-    {
-        EmulatorRenderIntro(&screenData, screenSize, &emuRe, dt);
-    }
-
-    StretchDIBits(hdc,
-        0,
-        screenData.targetHeight,
-        screenData.targetWidth,
-        -screenData.targetHeight,
-        0,
-        0,
-        screenData.nativeWidth,
-        screenData.nativeHeight,
-        screenData.memory,
-        &screenData.bitmap_info,
-        DIB_RGB_COLORS,
-        SRCCOPY
-    );
-}
-
-LRESULT CALLBACK WndProc(HWND hwnd, UINT msg,
-    WPARAM wParam, LPARAM lParam)
-{
-    switch(msg)
-    {
-        case WM_PAINT:
-        break;
-
-        case WM_DESTROY:
-        isRunning = false;
-        PostQuitMessage(0);
-        return 0;
-    }
-
-    return DefWindowProcW(hwnd, msg, wParam, lParam);
 }

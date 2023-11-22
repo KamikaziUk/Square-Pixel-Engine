@@ -2,9 +2,9 @@
 #ifndef GAME_SANTA
 #define GAME_SANTA
 
-#include "../../SquareEngine/Source/drawing.h"
-#include "../../SquareEngine/Source/input.h"
-#include "../../SquareEngine/Source/External/cute_sound.h"
+#include "drawing.h"
+#include "input.h"
+#include "External/cute_sound.h"
 
 struct AABB
 {

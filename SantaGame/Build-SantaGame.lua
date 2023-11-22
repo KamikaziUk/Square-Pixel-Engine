@@ -10,7 +10,10 @@ project "SantaGame"
 
    includedirs
    {
-      "Source"
+      "Source",
+	  
+	  -- Include SquareEngine
+	  "../SquareEngine/Source"
    }
 
    targetdir ("../Binaries/" .. OutputDir .. "/%{prj.name}")
