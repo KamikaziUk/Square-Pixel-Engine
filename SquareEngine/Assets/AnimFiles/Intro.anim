@@ -1,0 +1,7 @@
+AnimCount:1
+// Anim 0
+FrameCount:10
+FrameIDs:0,0,0,0,0,1,2,3,4,5
+AnimTime:2.0
+Loop:0 
+End

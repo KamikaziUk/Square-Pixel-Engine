@@ -1,7 +1,8 @@
 project "SquareEngine"
-   kind "StaticLib"
+   kind "WindowedApp"
    language "C++"
    cppdialect "C++latest"
+   toolset "v142"
    targetdir "Binaries/%{cfg.buildcfg}"
    staticruntime "off"
 
@@ -9,9 +10,17 @@ project "SquareEngine"
 
    includedirs
    {
-      "Source"
+      "Source",
+	  
+	  -- Include SantaGame
+	  "../SantaGame/Source"
    }
-
+   
+   links
+   {
+      "SantaGame"
+   }
+   
    targetdir ("../Binaries/" .. OutputDir .. "/%{prj.name}")
    objdir ("../Binaries/Intermediates/" .. OutputDir .. "/%{prj.name}")
 

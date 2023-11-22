@@ -2,7 +2,7 @@
 workspace "Square Engine"
    architecture "x64"
    configurations { "Debug", "Release", "Dist" }
-   startproject "SantaGame"
+   startproject "SquareEngine"
 
    -- Workspace-wide build options for MSVC
    filter "system:windows"
