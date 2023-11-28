@@ -1,5 +1,5 @@
-project "SquareEngine"
-   kind "StaticLib"
+project "Launcher"
+   kind "WindowedApp"
    language "C++"
    cppdialect "C++latest"
    toolset "v142"
@@ -11,11 +11,24 @@ project "SquareEngine"
    includedirs
    {
       "Source",
+	  
+	  -- Include SquareEngine
+	  "../SquareEngine/Source"
+   }
+   
+   links
+   {
+      "SquareEngine"
    }
    
    targetdir ("../Binaries/" .. OutputDir .. "/%{prj.name}")
    objdir ("../Binaries/Intermediates/" .. OutputDir .. "/%{prj.name}")
 
+	postbuildcommands 
+	{
+	  "{COPY} %{cfg.targetdir}/../SantaGame/SantaGame.dll %{cfg.targetdir}"
+	}
+	
    filter "system:windows"
        systemversion "latest"
        defines {}

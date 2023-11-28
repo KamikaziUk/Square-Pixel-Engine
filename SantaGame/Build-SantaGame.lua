@@ -1,5 +1,5 @@
 project "SantaGame"
-   kind "StaticLib"
+   kind "SharedLib"
    language "C++"
    cppdialect "C++latest"
    toolset "v142"
@@ -15,13 +15,18 @@ project "SantaGame"
 	  -- Include SquareEngine
 	  "../SquareEngine/Source"
    }
+      
+   links
+   {
+      "SquareEngine"
+   }
 
    targetdir ("../Binaries/" .. OutputDir .. "/%{prj.name}")
    objdir ("../Binaries/Intermediates/" .. OutputDir .. "/%{prj.name}")
 
    filter "system:windows"
        systemversion "latest"
-       defines { "WINDOWS" }
+       defines {}
 
    filter "configurations:Debug"
        defines { "DEBUG" }

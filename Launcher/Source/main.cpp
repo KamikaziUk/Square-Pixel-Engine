@@ -10,7 +10,6 @@
 #include "input.h"
 #include "Emulator/emulator_rendering.h"
 #include "Emulator/emulator_input.h"
-#include "game_santa.h"
 
 // Engine data
 ScreenData screenData = {};
@@ -24,6 +23,18 @@ int scaleWindow = 2;
 bool isRunning = true;
 XInputController controller0 = XInputController::SetupController(0);
 KeyboardMouse keyboardMouse = KeyboardMouse::Setup();
+
+// GameDLL
+class GameSanta;
+typedef void(__stdcall* OnSantaStart)(CameraRect* mainCamera, cs_context_t* ctx);
+typedef void(__stdcall* OnSantaUpdate)(CameraRect* mainCamera, XInputController* controller, KeyboardMouse* keyboardMouse, float dt, cs_context_t* ctx);
+typedef void(__stdcall* OnSantaRender)(CameraRect* mainCamera, ScreenData* sD, int screenSize);
+typedef void(__stdcall* OnSantaEnd)(CameraRect* mainCamera, cs_context_t* ctx);
+
+OnSantaStart santaStart;
+OnSantaUpdate santaUpdate;
+OnSantaRender santaRender;
+OnSantaEnd santaEnd;
 
 // Emulator data
 enum EmulatorState
@@ -41,9 +52,6 @@ int camerasSize = 0;
 CameraRect* cameras = nullptr;
 float gameCameraXSpeed = 0;
 float gameCameraYSpeed = 0;
-
-// Game
-GameSanta gameSanta = {};
 
 void CameraMovement()
 {
@@ -93,7 +101,7 @@ void RenderToScreen(HWND hwnd, HDC hdc, float dt)
 
     if(emuState == EmulatorState::SantaGameUpdate)
     {
-        OnSantaRender(&gameSanta, &cameras[1], &screenData, screenSize);
+        santaRender(&cameras[1], &screenData, screenSize);
     }
     else if(emuState == EmulatorState::Intro)
     {
@@ -138,15 +146,13 @@ void MainLoop()
 
     if(emuState == EmulatorState::SantaGameStart)
     {
-        gameSanta = {};
-
-        OnSantaStart(&gameSanta, &cameras[1], ctx);
+        santaStart(&cameras[1], ctx);
 
         emuState = EmulatorState::SantaGameUpdate;
     }
     else if(emuState == EmulatorState::SantaGameUpdate)
     {
-        OnSantaUpdate(&gameSanta, &cameras[1], &controller0, &keyboardMouse, dt, ctx);
+        santaUpdate(&cameras[1], &controller0, &keyboardMouse, dt, ctx);
     }
     else if(emuState == EmulatorState::Intro)
     {
@@ -198,6 +204,38 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLin
         freopen("CONOUT$", "w", stderr);
     }
 #endif
+
+    HINSTANCE santaGameDLL = LoadLibrary(L"SantaGame.dll");
+    if(santaGameDLL == NULL)
+    {
+        printf("cannot load santa game .dll file");
+    }
+    else
+    {
+        santaStart = (OnSantaStart)GetProcAddress(santaGameDLL, "OnSantaStart");
+        if(!santaStart)
+        {
+            printf("could not locate the santaStart function");
+        }
+
+        santaUpdate = (OnSantaUpdate)GetProcAddress(santaGameDLL, "OnSantaUpdate");
+        if(!santaUpdate)
+        {
+            printf("could not locate the santaUpdate function");
+        }
+
+        santaRender = (OnSantaRender)GetProcAddress(santaGameDLL, "OnSantaRender");
+        if(!santaRender)
+        {
+            printf("could not locate the santaRender function");
+        }
+
+        santaEnd = (OnSantaEnd)GetProcAddress(santaGameDLL, "OnSantaEnd");
+        if(!santaEnd)
+        {
+            printf("could not locate the santaEnd function");
+        }
+    }
 
     WNDCLASSW wc = { 0 };
 
@@ -271,7 +309,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLin
         MainLoop();
     }
 
-    OnSantaEnd(&gameSanta, &cameras[1], ctx);
+   santaEnd(&cameras[1], ctx);
 
     cs_shutdown_context(ctx);
 

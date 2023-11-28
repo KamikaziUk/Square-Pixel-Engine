@@ -9,6 +9,8 @@
 
 #define ARRAY_COUNT(arrayName) sizeof(arrayName) / sizeof(arrayName[0])
 
+static GameSanta* game;
+
 int RandomMinMax(int min, int max)
 {
 	if(min == 0 && max == 0)
@@ -196,8 +198,10 @@ void CutePlaySound(cs_context_t* ctx, cs_playing_sound_t* sound, bool loop)
 	}
 }
 
-void OnSantaStart(GameSanta* game, CameraRect* mainCamera, cs_context_t* ctx)
+void OnSantaStart(CameraRect* mainCamera, cs_context_t* ctx)
 {	
+	game = new GameSanta();
+
 	game->gameState = GameSanta::GameState::Menu;
 
 	game->santaImage = LoadImageFromFile("../SantaGame/Assets/Sprites/Santa.png");
@@ -313,7 +317,7 @@ void OnSantaStart(GameSanta* game, CameraRect* mainCamera, cs_context_t* ctx)
 	CuteLoadSound(ctx, "../SantaGame/Assets/Sounds/Lost.wav", &game->audioData.lost, &game->audioData.lostData);
 }
 
-void OnSantaEnd(GameSanta* game, CameraRect* mainCamera, cs_context_t* ctx)
+void OnSantaEnd(CameraRect* mainCamera, cs_context_t* ctx)
 {	
 	cs_free_sound(&game->audioData.musicData);
 	cs_free_sound(&game->audioData.buttonUIData);
@@ -322,6 +326,9 @@ void OnSantaEnd(GameSanta* game, CameraRect* mainCamera, cs_context_t* ctx)
 	cs_free_sound(&game->audioData.missedData);
 	cs_free_sound(&game->audioData.pickupData);
 	cs_free_sound(&game->audioData.lostData);
+
+	delete game;
+	game = nullptr;
 }
 
 void UpdateHUD(GameSanta* game)
@@ -392,7 +399,7 @@ void SpawnMissParticle(GameSanta* game)
 	}
 }
 
-void OnSantaUpdate(GameSanta* game, CameraRect* mainCamera, XInputController* controller, KeyboardMouse* keyboardMouse, float dt, cs_context_t* ctx)
+void OnSantaUpdate(CameraRect* mainCamera, XInputController* controller, KeyboardMouse* keyboardMouse, float dt, cs_context_t* ctx)
 {		
 	game->gameTimer += dt;
 
@@ -626,7 +633,7 @@ void OnSantaUpdate(GameSanta* game, CameraRect* mainCamera, XInputController* co
 	}
 }
 
-void OnSantaRender(GameSanta* game, CameraRect* mainCamera, ScreenData* sD, int screenSize)
+void OnSantaRender(CameraRect* mainCamera, ScreenData* sD, int screenSize)
 {	
 	if(game->gameState == GameSanta::GameState::Menu)
 	{

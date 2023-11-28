@@ -2,7 +2,7 @@
 workspace "Square Engine"
    architecture "x64"
    configurations { "Debug", "Release", "Dist" }
-   startproject "SquareEngine"
+   startproject "Launcher"
 
    -- Workspace-wide build options for MSVC
    filter "system:windows"
@@ -10,5 +10,6 @@ workspace "Square Engine"
 
 OutputDir = "%{cfg.system}-%{cfg.architecture}/%{cfg.buildcfg}"
 
+include "Launcher/Build-Launcher.lua"
 include "SquareEngine/Build-SquareEngine.lua"
 include "SantaGame/Build-SantaGame.lua"

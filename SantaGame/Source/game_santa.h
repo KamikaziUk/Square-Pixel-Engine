@@ -4,7 +4,17 @@
 
 #include "drawing.h"
 #include "input.h"
+
+#define CUTE_SOUND_IMPLEMENTATION
 #include "External/cute_sound.h"
+
+#ifdef GAME_EXPORTS
+#define GAME_API __declspec(dllexport)
+#else
+#define GAME_API __declspec(dllimport)
+#endif
+
+#define EXPORTDLL extern "C" GAME_API
 
 struct AABB
 {
@@ -193,9 +203,10 @@ struct GameSanta
 	GameState gameState;
 };
 
-void OnSantaStart(GameSanta* game, CameraRect* mainCamera, cs_context_t* ctx);
-void OnSantaUpdate(GameSanta* game, CameraRect* mainCamera, XInputController* controller, KeyboardMouse* keyboardMouse, float dt, cs_context_t* ctx);
-void OnSantaRender(GameSanta* game, CameraRect* mainCamera, ScreenData* sD, int screenSize);
-void OnSantaEnd(GameSanta* game, CameraRect* mainCamera, cs_context_t* ctx);
+// NOTE: If changed, remember to update in the main.cpp of launcher
+EXPORTDLL void OnSantaStart(CameraRect* mainCamera, cs_context_t* ctx);
+EXPORTDLL void OnSantaUpdate(CameraRect* mainCamera, XInputController* controller, KeyboardMouse* keyboardMouse, float dt, cs_context_t* ctx);
+EXPORTDLL void OnSantaRender(CameraRect* mainCamera, ScreenData* sD, int screenSize);
+EXPORTDLL void OnSantaEnd(CameraRect* mainCamera, cs_context_t* ctx);
 
 #endif
