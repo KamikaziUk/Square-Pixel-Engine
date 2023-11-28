@@ -3,7 +3,9 @@
 #define GAME_SANTA
 
 #include "drawing.h"
-#include "input.h"
+
+#include "input_data.h"
+#include "sound_data.h"
 
 #define CUTE_SOUND_IMPLEMENTATION
 #include "External/cute_sound.h"
@@ -124,7 +126,7 @@ struct AudioData
 	cs_playing_sound_t lost;
 };
 
-struct GameSanta
+struct GameData
 {
 	enum GameState
 	{
@@ -204,11 +206,11 @@ struct GameSanta
 };
 
 // NOTE: If changed, remember to update in the main.cpp of launcher
-EXPORTDLL void OnGameStart(CameraRect* mainCamera, cs_context_t* ctx);
-EXPORTDLL void OnGameUpdate(CameraRect* mainCamera, XInputController* controller, KeyboardMouse* keyboardMouse, float dt, cs_context_t* ctx);
+EXPORTDLL void OnGameStart(SoundData* soundData, CameraRect* mainCamera);
+EXPORTDLL void OnGameUpdate(InputData* inputData, SoundData* soundData, CameraRect* mainCamera, float deltaTime);
 EXPORTDLL void OnGameRender(CameraRect* mainCamera, ScreenData* sD, int screenSize);
-EXPORTDLL void OnGameEnd(CameraRect* mainCamera, cs_context_t* ctx);
+EXPORTDLL void OnGameEnd(SoundData* soundData, CameraRect* mainCamera);
 
-extern GameSanta* game;
+extern GameData* game;
 
 #endif

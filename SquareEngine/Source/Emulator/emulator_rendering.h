@@ -1,6 +1,6 @@
 #pragma once
-#ifndef EMULATOR_RENDERING_CODE
-#define EMULATOR_RENDERING_CODE
+#ifndef EMULATOR_RENDERING
+#define EMULATOR_RENDERING
 
 #include "../drawing.h"
 
@@ -46,6 +46,10 @@ struct EmulatorRendering
     bool isIntro;
 };
 
+#include "input_data.h"
+#include "drawing.h"
+
+void UpdateEmulatorUI(InputData* inputData, EmulatorRendering* emuRe);
 EmulatorRendering EmulatorRenderingSetup(CameraRect* screenCamera);
 void EmulatorRender(ScreenData* screenData, int screenSize, EmulatorRendering* emuRe, float dt);
 void EmulatorRenderIntro(ScreenData* screenData, int screenSize, EmulatorRendering* emuRe, float dt);

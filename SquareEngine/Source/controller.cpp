@@ -1,6 +1,6 @@
-#include "input.h"
-
 #include <stdio.h>
+
+#include "controller.h"
 
 XINPUT_STATE GetState(XInputController* controller)
 {
@@ -47,49 +47,7 @@ void Vibrate(XInputController* controller, int leftVal, int rightVal)
     XInputSetState(controller->controllerNum, &vibration);
 }
 
-void UpdateButtonState(ButtonState* state, bool pressed)
-{
-    if(pressed)
-    {
-        if(*state == ButtonState::None)
-        {
-            *state = ButtonState::Down;
-        }
-        else if(*state == ButtonState::Down)
-        {
-            *state = ButtonState::Held;
-        }
-    }
-    else
-    {
-        if(*state == ButtonState::Down ||
-            *state == ButtonState::Held)
-        {
-            *state = ButtonState::Up;
-        }
-        else if(*state == ButtonState::Up)
-        {
-            *state = ButtonState::None;
-        }
-    }
-}
-
-void UpdateKeyboardStates( KeyboardMouse* keyboardMouse)
-{
-    for(int i = 0; i < 256; i++)
-    {
-        bool keyHeld = (GetAsyncKeyState(i) & (1 << 16));
-        UpdateButtonState(&keyboardMouse->keyStates[i], keyHeld);
-
-        // Don't count mouse for now
-        if(keyHeld && i > 3)
-        {
-            keyboardMouse->inputType = InputType::KeyboardMouse;
-        }
-    }
-}
-
-void UpdateGamepadStates(XInputController* controller, KeyboardMouse* keyboardMouse)
+bool UpdateControllerStates(XInputController* controller)
 {
     if(IsConnected(controller))
     {
@@ -142,7 +100,7 @@ void UpdateGamepadStates(XInputController* controller, KeyboardMouse* keyboardMo
 
         if(anyButtonPressed)
         {
-            keyboardMouse->inputType = InputType::Gamepad;
+            return true;
         }
     }
     else
@@ -152,4 +110,6 @@ void UpdateGamepadStates(XInputController* controller, KeyboardMouse* keyboardMo
             controller->gamepadStates[i] = ButtonState::None;
         }
     }
+
+    return false;
 }

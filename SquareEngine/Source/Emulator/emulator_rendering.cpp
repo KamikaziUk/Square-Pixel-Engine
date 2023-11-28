@@ -94,3 +94,111 @@ void EmulatorRender(ScreenData* screenData, int screenSize, EmulatorRendering* e
         RenderText(screenData, emuRe->texts[i], screenSize);
     }
 }
+
+void UpdateEmulatorUI(InputData* inputData, EmulatorRendering* emuRe)
+{
+    // Update buttons if input type changes
+    if(inputData->inputType == InputType::Controller)
+    {
+        emuRe->sprites[2].image = &emuRe->newImages[(int)EmulatorImages::ButtonA];
+        emuRe->sprites[4].image = &emuRe->newImages[(int)EmulatorImages::ButtonB];
+    }
+    else
+    {
+        emuRe->sprites[2].image = &emuRe->newImages[(int)EmulatorImages::ButtonJ];
+        emuRe->sprites[4].image = &emuRe->newImages[(int)EmulatorImages::ButtonK];
+    }
+
+    // Left
+    if(inputData->keyboardMouse.keyStates[(int)KeyCodes::AKey] == ButtonState::Held || 
+       inputData->controller.gamepadStates[(int)ControllerButtonCodes::DPAD_LEFT] == ButtonState::Held ||
+       inputData->controller.gamepadStates[(int)ControllerButtonCodes::L_THUMB_LEFT] == ButtonState::Held)
+    {
+        emuRe->sprites[9].image = &emuRe->newImages[(int)EmulatorImages::DpadButtonDown];
+        emuRe->sprites[10].y = 200;
+    }
+    else
+    {
+        emuRe->sprites[9].image = &emuRe->newImages[(int)EmulatorImages::DpadButtonUp];
+        emuRe->sprites[10].y = 198;
+    }
+
+    // Right
+    if(inputData->keyboardMouse.keyStates[(int)KeyCodes::DKey] == ButtonState::Held || 
+       inputData->controller.gamepadStates[(int)ControllerButtonCodes::DPAD_RIGHT] == ButtonState::Held ||
+       inputData->controller.gamepadStates[(int)ControllerButtonCodes::L_THUMB_RIGHT] == ButtonState::Held)
+    {
+        emuRe->sprites[11].image = &emuRe->newImages[(int)EmulatorImages::DpadButtonDown];
+        emuRe->sprites[12].y = 200;
+    }
+    else
+    {
+        emuRe->sprites[11].image = &emuRe->newImages[(int)EmulatorImages::DpadButtonUp];
+        emuRe->sprites[12].y = 198;
+    }
+
+    // Up
+    if(inputData->keyboardMouse.keyStates[(int)KeyCodes::WKey] == ButtonState::Held || 
+       inputData->controller.gamepadStates[(int)ControllerButtonCodes::DPAD_UP] == ButtonState::Held ||
+       inputData->controller.gamepadStates[(int)ControllerButtonCodes::L_THUMB_UP] == ButtonState::Held)
+    {
+        emuRe->sprites[5].image = &emuRe->newImages[(int)EmulatorImages::DpadButtonDown];
+        emuRe->sprites[6].y = 184;
+    }
+    else
+    {
+        emuRe->sprites[5].image = &emuRe->newImages[(int)EmulatorImages::DpadButtonUp];
+        emuRe->sprites[6].y = 182;
+    }
+
+    // Down
+    if(inputData->keyboardMouse.keyStates[(int)KeyCodes::SKey] == ButtonState::Held ||
+       inputData->controller.gamepadStates[(int)ControllerButtonCodes::DPAD_DOWN] == ButtonState::Held ||
+       inputData->controller.gamepadStates[(int)ControllerButtonCodes::L_THUMB_DOWN] == ButtonState::Held)
+    {
+        emuRe->sprites[7].image = &emuRe->newImages[(int)EmulatorImages::DpadButtonDown];
+        emuRe->sprites[8].y = 216;
+    }
+    else
+    {
+        emuRe->sprites[7].image = &emuRe->newImages[(int)EmulatorImages::DpadButtonUp];
+        emuRe->sprites[8].y = 214;
+    }
+
+    // Action
+    if(inputData->keyboardMouse.keyStates[(int)KeyCodes::JKey] == ButtonState::Held || 
+       inputData->controller.gamepadStates[(int)ControllerButtonCodes::A] == ButtonState::Held)
+    {
+        emuRe->sprites[1].image = &emuRe->newImages[(int)EmulatorImages::ButtonDown];
+        emuRe->sprites[2].y = 204;
+    }
+    else
+    {
+        emuRe->sprites[1].image = &emuRe->newImages[(int)EmulatorImages::ButtonUp];
+        emuRe->sprites[2].y = 202;
+    }
+
+    // Back
+    if(inputData->keyboardMouse.keyStates[(int)KeyCodes::KKey] == ButtonState::Held || 
+       inputData->controller.gamepadStates[(int)ControllerButtonCodes::B] == ButtonState::Held)
+    {
+        emuRe->sprites[3].image = &emuRe->newImages[(int)EmulatorImages::ButtonDown];
+        emuRe->sprites[4].y = 182;
+    }
+    else
+    {
+        emuRe->sprites[3].image = &emuRe->newImages[(int)EmulatorImages::ButtonUp];
+        emuRe->sprites[4].y = 180;
+    }
+
+    // Menu
+    if(inputData->keyboardMouse.keyStates[(int)KeyCodes::Escape] == ButtonState::Held ||
+       inputData->controller.gamepadStates[(int)ControllerButtonCodes::START] == ButtonState::Held)
+    {
+        emuRe->sprites[13].image = &emuRe->newImages[(int)EmulatorImages::ButtonMenuDown];
+    }
+    else
+    {
+        emuRe->sprites[13].image = &emuRe->newImages[(int)EmulatorImages::ButtonMenuUp];
+    }
+}

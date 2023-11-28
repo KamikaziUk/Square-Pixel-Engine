@@ -1,6 +1,6 @@
 #pragma once
-#ifndef DRAWING_CODE
-#define DRAWING_CODE
+#ifndef DRAWING
+#define DRAWING
 
 #include <windows.h>
 
@@ -21,8 +21,8 @@ struct Color
     int a;
 };
 
-static Color colorWhite = Color(255, 255, 255);
-static Color colorGreen = Color(0, 155, 0);
+#define colorWhite Color(255, 255, 255)
+#define colorGreen Color(0, 155, 0)
 
 struct CameraRect
 {

@@ -1,34 +1,26 @@
 #include <windows.h>
 #pragma comment(lib, "winmm.lib")
 
-#define CUTE_SOUND_IMPLEMENTATION
-#include "External/cute_sound.h"
-
 #include <iostream>
 
+#include "window_data.h"
+#include "sound_data.h"
+
 #include "drawing.h"
-#include "input.h"
+#include "input_data.h"
 #include "Emulator/emulator_rendering.h"
 #include "Emulator/emulator_input.h"
 
-// Engine data
-ScreenData screenData = {};
-
-MSG msg;
-cs_context_t* ctx;
-HWND window;
-HDC hdc;
-
-int scaleWindow = 2;
-bool isRunning = true;
-XInputController controller0 = XInputController::SetupController(0);
-KeyboardMouse keyboardMouse = KeyboardMouse::Setup();
+// Global engine data
+WindowData windowData = {};
+SoundData soundData = {};
+InputData inputData = {};
 
 // GameDLL
-typedef void(__stdcall* OnGameStart)(CameraRect* mainCamera, cs_context_t* ctx);
-typedef void(__stdcall* OnGameUpdate)(CameraRect* mainCamera, XInputController* controller, KeyboardMouse* keyboardMouse, float dt, cs_context_t* ctx);
+typedef void(__stdcall* OnGameStart)(SoundData* soundData, CameraRect* mainCamera);
+typedef void(__stdcall* OnGameUpdate)(InputData* inputData, SoundData* soundData, CameraRect* mainCamera, float deltaTime);
 typedef void(__stdcall* OnGameRender)(CameraRect* mainCamera, ScreenData* sD, int screenSize);
-typedef void(__stdcall* OnGameEnd)(CameraRect* mainCamera, cs_context_t* ctx);
+typedef void(__stdcall* OnGameEnd)(SoundData* soundData, CameraRect* mainCamera);
 
 OnGameStart gameStart;
 OnGameUpdate gameUpdate;
@@ -57,11 +49,11 @@ void CameraMovement()
     // Camera movement
     const float moveSpeed = 0.1f;
 
-    if(keyboardMouse.keyStates[(int)KeyCodes::ArrowLeft] == ButtonState::Held)
+    if(inputData.keyboardMouse.keyStates[(int)KeyCodes::ArrowLeft] == ButtonState::Held)
     {
         gameCameraXSpeed = -moveSpeed;
     }
-    else if(keyboardMouse.keyStates[(int)KeyCodes::ArrowRight] == ButtonState::Held)
+    else if(inputData.keyboardMouse.keyStates[(int)KeyCodes::ArrowRight] == ButtonState::Held)
     {
         gameCameraXSpeed = moveSpeed;
     }
@@ -70,11 +62,11 @@ void CameraMovement()
         gameCameraXSpeed = 0;
     }
 
-    if(keyboardMouse.keyStates[(int)KeyCodes::ArrowUp] == ButtonState::Held)
+    if(inputData.keyboardMouse.keyStates[(int)KeyCodes::ArrowUp] == ButtonState::Held)
     {
         gameCameraYSpeed = moveSpeed;
     }
-    else if(keyboardMouse.keyStates[(int)KeyCodes::ArrowDown] == ButtonState::Held)
+    else if(inputData.keyboardMouse.keyStates[(int)KeyCodes::ArrowDown] == ButtonState::Held)
     {
         gameCameraYSpeed = -moveSpeed;
     }
@@ -84,40 +76,37 @@ void CameraMovement()
     }
 }
 
-float current_ticks = 0, delta_ticks = 0;
-float begin = 0;
-float fps = 0;
-float dt = 0;
-
 void RenderToScreen(HWND hwnd, HDC hdc, float dt)
 {
-    memset(screenData.memory, 0, screenData.nativeWidth * screenData.nativeHeight * 4);
-    memset(screenData.sortDepthBuffer, 0, (screenData.nativeWidth * screenData.nativeHeight) * sizeof(int));
+    auto* screenData = &windowData.screenData;
 
-    int screenSize = screenData.nativeWidth * screenData.nativeHeight * 4;
+    memset(screenData->memory, 0, screenData->nativeWidth * screenData->nativeHeight * 4);
+    memset(screenData->sortDepthBuffer, 0, (screenData->nativeWidth * screenData->nativeHeight) * sizeof(int));
 
-    EmulatorRender(&screenData, screenSize, &emuRe, dt);
+    int screenSize = screenData->nativeWidth * screenData->nativeHeight * 4;
+
+    EmulatorRender(screenData, screenSize, &emuRe, dt);
 
     if(emuState == EmulatorState::SantaGameUpdate)
     {
-        gameRender(&cameras[1], &screenData, screenSize);
+        gameRender(&cameras[1], screenData, screenSize);
     }
     else if(emuState == EmulatorState::Intro)
     {
-        EmulatorRenderIntro(&screenData, screenSize, &emuRe, dt);
+        EmulatorRenderIntro(screenData, screenSize, &emuRe, dt);
     }
 
     StretchDIBits(hdc,
         0,
-        screenData.targetHeight,
-        screenData.targetWidth,
-        -screenData.targetHeight,
+        screenData->targetHeight,
+        screenData->targetWidth,
+        -screenData->targetHeight,
         0,
         0,
-        screenData.nativeWidth,
-        screenData.nativeHeight,
-        screenData.memory,
-        &screenData.bitmap_info,
+        screenData->nativeWidth,
+        screenData->nativeHeight,
+        screenData->memory,
+        &screenData->bitmap_info,
         DIB_RGB_COLORS,
         SRCCOPY
     );
@@ -125,18 +114,26 @@ void RenderToScreen(HWND hwnd, HDC hdc, float dt)
 
 void MainLoop()
 {
-    dt = (clock() - current_ticks) / 1000.0f;
-    current_ticks = clock();
+    windowData.dt = (clock() - windowData.currentTicks) / 1000.0f;
+    windowData.currentTicks = clock();
 
-    while(PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+    while(PeekMessage(&windowData.msg, NULL, 0, 0, PM_REMOVE))
     {
-        TranslateMessage(&msg);
-        DispatchMessage(&msg);
+        TranslateMessage(&windowData.msg);
+        DispatchMessage(&windowData.msg);
     }
 
-    UpdateGamepadStates(&controller0, &keyboardMouse);
-    UpdateKeyboardStates(&keyboardMouse);
-    UpdateEmulatorUI(&controller0, &keyboardMouse, &emuRe);
+    if(UpdateControllerStates(&inputData.controller))
+    {
+        inputData.inputType = InputType::Controller;
+    }
+
+    if(UpdateKeyboardStates(&inputData.keyboardMouse))
+    {
+        inputData.inputType = InputType::KeyboardMouse;
+    }
+  
+    UpdateEmulatorUI(&inputData, &emuRe);
 
     CameraMovement();
 
@@ -145,13 +142,13 @@ void MainLoop()
 
     if(emuState == EmulatorState::SantaGameStart)
     {
-        gameStart(&cameras[1], ctx);
+        gameStart(&soundData, &cameras[1]);
 
         emuState = EmulatorState::SantaGameUpdate;
     }
     else if(emuState == EmulatorState::SantaGameUpdate)
     {
-        gameUpdate(&cameras[1], &controller0, &keyboardMouse, dt, ctx);
+        gameUpdate(&inputData, &soundData, &cameras[1], windowData.dt);
     }
     else if(emuState == EmulatorState::Intro)
     {
@@ -161,15 +158,15 @@ void MainLoop()
         }
     }
 
-    RenderToScreen(window, hdc, dt);
+    RenderToScreen(windowData.window, windowData.hdc, windowData.dt);
 
-    cs_mix(ctx);
+    cs_mix(soundData.ctx);
 
-    delta_ticks = clock() - current_ticks; //the time, in ms, that took to render the scene
+    windowData.deltaTicks = clock() - windowData.currentTicks; //the time, in ms, that took to render the scene
 
-    if(delta_ticks > 0)
+    if(windowData.deltaTicks > 0)
     {
-        fps = CLOCKS_PER_SEC / delta_ticks;
+        windowData.fps = CLOCKS_PER_SEC / windowData.deltaTicks;
     }
 }
 
@@ -182,7 +179,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg,
         break;
 
         case WM_DESTROY:
-        isRunning = false;
+        windowData.isRunning = false;
         PostQuitMessage(0);
         return 0;
     }
@@ -255,48 +252,50 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLin
     wc.lpfnWndProc = WndProc;
     wc.hCursor = LoadCursor(0, IDC_ARROW);
 
-    screenData.nativeWidth = 224;
-    screenData.nativeHeight = 248;
+     windowData.screenData.nativeWidth = 224;
+     windowData.screenData.nativeHeight = 248;
 
     int borderSizeWidth = 16;
     int borderSizeHeight = 39;
 
-    int actualScreenWidth = (screenData.nativeWidth + borderSizeWidth) * scaleWindow;
-    int actualScreenHeight = (screenData.nativeHeight + borderSizeHeight) * scaleWindow;
+    int actualScreenWidth = (windowData.screenData.nativeWidth + borderSizeWidth) * windowData.scaleWindow;
+    int actualScreenHeight = (windowData.screenData.nativeHeight + borderSizeHeight) * windowData.scaleWindow;
 
     int width = GetSystemMetrics(SM_CXSCREEN);
     int height = GetSystemMetrics(SM_CYSCREEN);
 
     RegisterClassW(&wc);
-    window = CreateWindowW(wc.lpszClassName, L"MG Games Collection",
+    windowData.window = CreateWindowW(wc.lpszClassName, L"MG Games Collection",
         WS_OVERLAPPEDWINDOW | WS_VISIBLE,
         (width / 2) - (actualScreenWidth / 2), (height / 2) - (actualScreenHeight / 2), actualScreenWidth, actualScreenHeight, NULL, NULL, hInstance, NULL);
 
     RECT rect;
-    GetClientRect(window, &rect);
-    screenData.targetWidth = rect.right - rect.left;
-    screenData.targetHeight = rect.bottom - rect.top;
+    GetClientRect(windowData.window, &rect);
+     windowData.screenData.targetWidth = rect.right - rect.left;
+     windowData.screenData.targetHeight = rect.bottom - rect.top;
 
-    screenData.memory = VirtualAlloc(0,
-        screenData.nativeWidth * screenData.nativeHeight * 4,
+     windowData.screenData.memory = VirtualAlloc(0,
+         windowData.screenData.nativeWidth * windowData.screenData.nativeHeight * 4,
         MEM_RESERVE | MEM_COMMIT,
         PAGE_READWRITE
     );
 
-    printf("creating window %d, %d \n", screenData.nativeWidth, screenData.nativeHeight);
+    printf("creating window %d, %d \n", windowData.screenData.nativeWidth, windowData.screenData.nativeHeight);
 
-    screenData.sortDepthBuffer = new int[screenData.nativeWidth * screenData.nativeHeight];
-    screenData.bitmap_info.bmiHeader.biSize = sizeof(screenData.bitmap_info.bmiHeader);
-    screenData.bitmap_info.bmiHeader.biWidth = screenData.nativeWidth;
-    screenData.bitmap_info.bmiHeader.biHeight = screenData.nativeHeight;
-    screenData.bitmap_info.bmiHeader.biPlanes = 1;
-    screenData.bitmap_info.bmiHeader.biBitCount = 32;
-    screenData.bitmap_info.bmiHeader.biCompression = BI_RGB;
+    windowData.isRunning = true;
+
+     windowData.screenData.sortDepthBuffer = new int[windowData.screenData.nativeWidth * windowData.screenData.nativeHeight];
+     windowData.screenData.bitmap_info.bmiHeader.biSize = sizeof(windowData.screenData.bitmap_info.bmiHeader);
+     windowData.screenData.bitmap_info.bmiHeader.biWidth = windowData.screenData.nativeWidth;
+     windowData.screenData.bitmap_info.bmiHeader.biHeight = windowData.screenData.nativeHeight;
+     windowData.screenData.bitmap_info.bmiHeader.biPlanes = 1;
+     windowData.screenData.bitmap_info.bmiHeader.biBitCount = 32;
+     windowData.screenData.bitmap_info.bmiHeader.biCompression = BI_RGB;
 
     // Cameras
     camerasSize = 2;
     cameras = new CameraRect[camerasSize];
-    cameras[0] = CameraRect(0, 0, screenData.nativeWidth, screenData.nativeHeight, false);
+    cameras[0] = CameraRect(0, 0, windowData.screenData.nativeWidth, windowData.screenData.nativeHeight, false);
     cameras[1] = CameraRect(32, 32, 160, 144, true);
 
     emuRe = EmulatorRenderingSetup(&cameras[0]);
@@ -305,22 +304,22 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLin
 
     srand(time(NULL));
 
-    hdc = GetDC(window);
+    windowData.hdc = GetDC(windowData.window);
 
-    begin = clock();
+    windowData.begin = clock();
 
-    ctx = cs_make_context(window, 44100, 8192, 0, NULL);
+    soundData.ctx = cs_make_context(windowData.window, 44100, 8192, 0, NULL);
 
     printf("finished window setup \n");
 
-    while(isRunning)
+    while(windowData.isRunning)
     {
         MainLoop();
     }
 
-    gameEnd(&cameras[1], ctx);
+    gameEnd(&soundData, &cameras[1]);
 
-    cs_shutdown_context(ctx);
+    cs_shutdown_context(soundData.ctx);
 
     for(int i = 0; i < emuRe.imagesSize; i++)
     {
@@ -330,7 +329,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLin
     delete[] emuRe.sprites;
     delete[] emuRe.newImages;
 
-    delete[] screenData.sortDepthBuffer;
+    delete[]  windowData.screenData.sortDepthBuffer;
 
     srand((unsigned int)time(NULL));
 

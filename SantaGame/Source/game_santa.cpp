@@ -9,7 +9,7 @@
 
 #define ARRAY_COUNT(arrayName) sizeof(arrayName) / sizeof(arrayName[0])
 
-GameSanta* game;
+GameData* game;
 
 int RandomMinMax(int min, int max)
 {
@@ -33,7 +33,7 @@ float clampVal(float min, float max, float value)
 	return value;
 }
 
-void GenerateBuilding(GameSanta* game, CameraRect* mainCamera)
+void GenerateBuilding(GameData* game, CameraRect* mainCamera)
 {
 	int currentBuildingId = -1;
 
@@ -198,11 +198,11 @@ void CutePlaySound(cs_context_t* ctx, cs_playing_sound_t* sound, bool loop)
 	}
 }
 
-void OnGameStart(CameraRect* mainCamera, cs_context_t* ctx)
+void OnGameStart(SoundData* soundData, CameraRect* mainCamera)
 {	
-	game = new GameSanta();
+	game = new GameData();
 
-	game->gameState = GameSanta::GameState::Menu;
+	game->gameState = GameData::GameState::Menu;
 
 	game->santaImage = LoadImageFromFile("../SantaGame/Assets/Sprites/Santa.png");
 	game->skyImage = LoadImageFromFile("../SantaGame/Assets/Sprites/Sky.png");
@@ -305,19 +305,19 @@ void OnGameStart(CameraRect* mainCamera, cs_context_t* ctx)
 		LoadAnimation(&game->missParticle[i].chimneyParticle, "../SantaGame/Assets/AnimFiles/MissParticle.anim");
 	}
 
-	CuteLoadSound(ctx, "../SantaGame/Assets/Sounds/Music.wav", &game->audioData.music, &game->audioData.musicData);
-	CutePlaySound(ctx, &game->audioData.music, true);
+	CuteLoadSound(soundData->ctx, "../SantaGame/Assets/Sounds/Music.wav", &game->audioData.music, &game->audioData.musicData);
+	CutePlaySound(soundData->ctx, &game->audioData.music, true);
 
-	CuteLoadSound(ctx, "../SantaGame/Assets/Sounds/ButtonUI.wav", &game->audioData.buttonUI, &game->audioData.buttonUIData);
+	CuteLoadSound(soundData->ctx, "../SantaGame/Assets/Sounds/ButtonUI.wav", &game->audioData.buttonUI, &game->audioData.buttonUIData);
 
-	CuteLoadSound(ctx, "../SantaGame/Assets/Sounds/Drop.wav", &game->audioData.drop, &game->audioData.dropData);
-	CuteLoadSound(ctx, "../SantaGame/Assets/Sounds/Hit.wav", &game->audioData.hit, &game->audioData.hitData);
-	CuteLoadSound(ctx, "../SantaGame/Assets/Sounds/Missed.wav", &game->audioData.missed, &game->audioData.missedData);
-	CuteLoadSound(ctx, "../SantaGame/Assets/Sounds/Pickup.wav", &game->audioData.pickup, &game->audioData.pickupData);
-	CuteLoadSound(ctx, "../SantaGame/Assets/Sounds/Lost.wav", &game->audioData.lost, &game->audioData.lostData);
+	CuteLoadSound(soundData->ctx, "../SantaGame/Assets/Sounds/Drop.wav", &game->audioData.drop, &game->audioData.dropData);
+	CuteLoadSound(soundData->ctx, "../SantaGame/Assets/Sounds/Hit.wav", &game->audioData.hit, &game->audioData.hitData);
+	CuteLoadSound(soundData->ctx, "../SantaGame/Assets/Sounds/Missed.wav", &game->audioData.missed, &game->audioData.missedData);
+	CuteLoadSound(soundData->ctx, "../SantaGame/Assets/Sounds/Pickup.wav", &game->audioData.pickup, &game->audioData.pickupData);
+	CuteLoadSound(soundData->ctx, "../SantaGame/Assets/Sounds/Lost.wav", &game->audioData.lost, &game->audioData.lostData);
 }
 
-void OnGameEnd(CameraRect* mainCamera, cs_context_t* ctx)
+void OnGameEnd(SoundData* soundData, CameraRect* mainCamera)
 {	
 	cs_free_sound(&game->audioData.musicData);
 	cs_free_sound(&game->audioData.buttonUIData);
@@ -331,7 +331,7 @@ void OnGameEnd(CameraRect* mainCamera, cs_context_t* ctx)
 	game = nullptr;
 }
 
-void UpdateHUD(GameSanta* game)
+void UpdateHUD(GameData* game)
 {
 	sprintf(game->scoreStr, "SCORE %d", game->score);
 	game->scoreText.stringLength = 6 + ((game->score / 10) + 1);
@@ -340,9 +340,9 @@ void UpdateHUD(GameSanta* game)
 	game->comboText.stringLength = 6 + ((game->combo / 10) + 1);
 }
 
-void GameOver(cs_context_t* ctx, GameSanta* game, CameraRect* mainCamera)
+void GameOver(cs_context_t* ctx, GameData* game, CameraRect* mainCamera)
 {
-	game->gameState = GameSanta::GameState::End;
+	game->gameState = GameData::GameState::End;
 
 	auto color2Title = Color(105, 157, 66);
 	auto colorTitle = Color(255, 233, 0);
@@ -363,7 +363,7 @@ void GameOver(cs_context_t* ctx, GameSanta* game, CameraRect* mainCamera)
 	game->delayTimer = 0.5f;
 }
 
-void DropPresent(cs_context_t* ctx, GameSanta* game, CameraRect* mainCamera)
+void DropPresent(cs_context_t* ctx, GameData* game, CameraRect* mainCamera)
 {
 	for(int i = 0; i < ARRAY_COUNT(game->presents); i++)
 	{
@@ -384,7 +384,7 @@ void DropPresent(cs_context_t* ctx, GameSanta* game, CameraRect* mainCamera)
 	}
 }
 
-void SpawnMissParticle(GameSanta* game)
+void SpawnMissParticle(GameData* game)
 {
 	for(int i = 0; i < ARRAY_COUNT(game->missParticle); i++)
 	{
@@ -399,33 +399,33 @@ void SpawnMissParticle(GameSanta* game)
 	}
 }
 
-void OnGameUpdate(CameraRect* mainCamera, XInputController* controller, KeyboardMouse* keyboardMouse, float dt, cs_context_t* ctx)
+void OnGameUpdate(InputData* inputData, SoundData* soundData, CameraRect* mainCamera, float deltaTime)
 {		
-	game->gameTimer += dt;
+	game->gameTimer += deltaTime;
 
-	game->delayTimer -= dt;
+	game->delayTimer -= deltaTime;
 
-	if(game->gameState == GameSanta::GameState::Menu)
+	if(game->gameState == GameData::GameState::Menu)
 	{
-		if(game->delayTimer <= 0.0f && GetActionButton(controller, keyboardMouse) == ButtonState::Down)
+		if(game->delayTimer <= 0.0f && GetActionButton(inputData) == ButtonState::Down)
 		{
-			game->gameState = GameSanta::GameState::Game;
+			game->gameState = GameData::GameState::Game;
 		}
 
-		UpdateSpriteAnimated(&game->menu, dt);
+		UpdateSpriteAnimated(&game->menu, deltaTime);
 
-		game->flickerTimer += dt * 0.5f;
+		game->flickerTimer += deltaTime * 0.5f;
 
 		if(game->flickerTimer > 1.0f)
 		{
 			game->flickerTimer = 0.0f;
 		}
 	}
-	else if(game->gameState == GameSanta::GameState::End)
+	else if(game->gameState == GameData::GameState::End)
 	{
-		if(game->delayTimer <= 0.0f && GetActionButton(controller, keyboardMouse) == ButtonState::Down)
+		if(game->delayTimer <= 0.0f && GetActionButton(inputData) == ButtonState::Down)
 		{
-			game->gameState = GameSanta::GameState::Game;
+			game->gameState = GameData::GameState::Game;
 			game->delayTimer = 0.5f;
 
 			game->lives = 3;
@@ -433,7 +433,7 @@ void OnGameUpdate(CameraRect* mainCamera, XInputController* controller, Keyboard
 			game->combo = 0;
 			game->gameTimer = 0.0f;
 
-			CutePlaySound(ctx, &game->audioData.buttonUI, false);
+			CutePlaySound(soundData->ctx, &game->audioData.buttonUI, false);
 
 			for(int i = 0; i < ARRAY_COUNT(game->missParticle); i++)
 			{
@@ -441,9 +441,9 @@ void OnGameUpdate(CameraRect* mainCamera, XInputController* controller, Keyboard
 			}
 		}
 
-		UpdateSpriteAnimated(&game->menu, dt);
+		UpdateSpriteAnimated(&game->menu, deltaTime);
 
-		game->flickerTimer += dt * 0.5f;
+		game->flickerTimer += deltaTime * 0.5f;
 
 		if(game->flickerTimer > 1.0f)
 		{
@@ -452,9 +452,9 @@ void OnGameUpdate(CameraRect* mainCamera, XInputController* controller, Keyboard
 	}
 	else
 	{
-		if(game->delayTimer <= 0.0f && GetActionButton(controller, keyboardMouse) == ButtonState::Down)
+		if(game->delayTimer <= 0.0f && GetActionButton(inputData) == ButtonState::Down)
 		{
-			DropPresent(ctx, game, mainCamera);
+			DropPresent(soundData->ctx, game, mainCamera);
 		}
 
 		auto scrollSpeed = 96.0f + (66.0f * clampVal(0.0f, 1.0f, game->gameTimer / 90.0f));
@@ -465,21 +465,21 @@ void OnGameUpdate(CameraRect* mainCamera, XInputController* controller, Keyboard
 			{
 				for(int j = 0; j < game->buildings[i].blocksSize; j++)
 				{
-					game->buildings[i].buildingBlocks[j].x -= scrollSpeed * dt;
-					game->buildings[i].windows[j].x -= scrollSpeed * dt;
+					game->buildings[i].buildingBlocks[j].x -= scrollSpeed * deltaTime;
+					game->buildings[i].windows[j].x -= scrollSpeed * deltaTime;
 				}
 
-				game->buildings[i].chimney.x -= scrollSpeed * dt;
-				game->buildings[i].roof.x -= scrollSpeed * dt;
-				game->buildings[i].foreground.x -= scrollSpeed * dt;
+				game->buildings[i].chimney.x -= scrollSpeed * deltaTime;
+				game->buildings[i].roof.x -= scrollSpeed * deltaTime;
+				game->buildings[i].foreground.x -= scrollSpeed * deltaTime;
 
 				if(game->buildings[i].hasChimney)
 				{
-					game->buildings[i].chimneyParticle.x -= scrollSpeed * dt;
-					game->buildings[i].lifeParticle.x -= scrollSpeed * dt;
-					game->buildings[i].naughtySign.x -= scrollSpeed * dt;
-					game->buildings[i].chimneyAABB.x -= scrollSpeed * dt;
-					game->buildings[i].lifeAABB.x -= scrollSpeed * dt;
+					game->buildings[i].chimneyParticle.x -= scrollSpeed * deltaTime;
+					game->buildings[i].lifeParticle.x -= scrollSpeed * deltaTime;
+					game->buildings[i].naughtySign.x -= scrollSpeed * deltaTime;
+					game->buildings[i].chimneyAABB.x -= scrollSpeed * deltaTime;
+					game->buildings[i].lifeAABB.x -= scrollSpeed * deltaTime;
 				}
 
 				if(game->buildings[i].buildingBlocks->x <= -(6 * 32))
@@ -488,9 +488,9 @@ void OnGameUpdate(CameraRect* mainCamera, XInputController* controller, Keyboard
 					GenerateBuilding(game, mainCamera);
 				}
 
-				UpdateSpriteAnimated(&game->buildings[i].chimneyParticle, dt);
-				UpdateSpriteAnimated(&game->buildings[i].lifeParticle, dt);
-				UpdateSpriteAnimated(&game->buildings[i].naughtySign, dt);
+				UpdateSpriteAnimated(&game->buildings[i].chimneyParticle, deltaTime);
+				UpdateSpriteAnimated(&game->buildings[i].lifeParticle, deltaTime);
+				UpdateSpriteAnimated(&game->buildings[i].naughtySign, deltaTime);
 			}
 		}
 
@@ -500,8 +500,8 @@ void OnGameUpdate(CameraRect* mainCamera, XInputController* controller, Keyboard
 		{
 			if(game->presents[i].active)
 			{
-				game->presents[i].sprite.x -= (scrollSpeed * 0.55f) * dt;
-				game->presents[i].sprite.y -= gravitySpeed * dt;
+				game->presents[i].sprite.x -= (scrollSpeed * 0.55f) * deltaTime;
+				game->presents[i].sprite.y -= gravitySpeed * deltaTime;
 
 				game->presents[i].aabb.x = game->presents[i].sprite.x;
 				game->presents[i].aabb.y = game->presents[i].sprite.y;
@@ -514,13 +514,13 @@ void OnGameUpdate(CameraRect* mainCamera, XInputController* controller, Keyboard
 					game->combo = 0;
 					UpdateHUD(game);
 
-					CutePlaySound(ctx, &game->audioData.missed, false);
+					CutePlaySound(soundData->ctx, &game->audioData.missed, false);
 
 					SpawnMissParticle(game);
 
 					if(game->lives <= 0)
 					{
-						GameOver(ctx, game, mainCamera);
+						GameOver(soundData->ctx, game, mainCamera);
 					}
 				}
 			}
@@ -549,7 +549,7 @@ void OnGameUpdate(CameraRect* mainCamera, XInputController* controller, Keyboard
 								game->combo = 0;
 								game->lives--;
 
-								CutePlaySound(ctx, &game->audioData.missed, false);
+								CutePlaySound(soundData->ctx, &game->audioData.missed, false);
 
 								SpawnMissParticle(game);
 							}
@@ -560,7 +560,7 @@ void OnGameUpdate(CameraRect* mainCamera, XInputController* controller, Keyboard
 								game->combo += 1;
 								game->score += game->combo;
 
-								CutePlaySound(ctx, &game->audioData.hit, false);
+								CutePlaySound(soundData->ctx, &game->audioData.hit, false);
 							}
 
 							UpdateHUD(game);
@@ -580,7 +580,7 @@ void OnGameUpdate(CameraRect* mainCamera, XInputController* controller, Keyboard
 								game->buildings[j].lifeActive = false;
 								game->lives = clampVal(0, 3, game->lives + 1);
 
-								CutePlaySound(ctx, &game->audioData.pickup, false);
+								CutePlaySound(soundData->ctx, &game->audioData.pickup, false);
 
 								UpdateHUD(game);
 							}
@@ -590,10 +590,10 @@ void OnGameUpdate(CameraRect* mainCamera, XInputController* controller, Keyboard
 			}
 		}
 
-		game->nextBuildingXOffset -= scrollSpeed * dt;
-		game->skyScrollX = fmod(game->skyScrollX - (scrollSpeed * 0.4f * dt), 160);
-		game->backScrollX = fmod(game->backScrollX - (scrollSpeed * 0.5f * dt), 160);
-		game->cloudScrollX = fmod(game->cloudScrollX - (scrollSpeed * 0.6f * dt), 160);
+		game->nextBuildingXOffset -= scrollSpeed * deltaTime;
+		game->skyScrollX = fmod(game->skyScrollX - (scrollSpeed * 0.4f * deltaTime), 160);
+		game->backScrollX = fmod(game->backScrollX - (scrollSpeed * 0.5f * deltaTime), 160);
+		game->cloudScrollX = fmod(game->cloudScrollX - (scrollSpeed * 0.6f * deltaTime), 160);
 
 		if(game->santa.currentAnimationID == 1 &&
 			game->santa.currentTime >= game->santa.animations[game->santa.currentAnimationID].animationTime)
@@ -602,13 +602,13 @@ void OnGameUpdate(CameraRect* mainCamera, XInputController* controller, Keyboard
 			game->santa.currentTime = 0.0f;
 		}
 
-		UpdateSpriteAnimated(&game->santa, dt);
+		UpdateSpriteAnimated(&game->santa, deltaTime);
 
 		// Snow particles
 		for(int y = 0; y < ARRAY_COUNT(game->snowParticleY); y++)
 		{
-			game->snowParticleX[y] -= (scrollSpeed * 0.55f) * dt;
-			game->snowParticleY[y] -= gravitySpeed * dt;
+			game->snowParticleX[y] -= (scrollSpeed * 0.55f) * deltaTime;
+			game->snowParticleY[y] -= gravitySpeed * deltaTime;
 
 			if(game->snowParticleY[y] < 0.0f)
 			{
@@ -627,7 +627,7 @@ void OnGameUpdate(CameraRect* mainCamera, XInputController* controller, Keyboard
 					game->missParticle[i].active = false;
 				}
 
-				UpdateSpriteAnimated(&game->missParticle[i].chimneyParticle, dt);
+				UpdateSpriteAnimated(&game->missParticle[i].chimneyParticle, deltaTime);
 			}
 		}
 	}
@@ -635,7 +635,7 @@ void OnGameUpdate(CameraRect* mainCamera, XInputController* controller, Keyboard
 
 void OnGameRender(CameraRect* mainCamera, ScreenData* sD, int screenSize)
 {	
-	if(game->gameState == GameSanta::GameState::Menu)
+	if(game->gameState == GameData::GameState::Menu)
 	{
 		RenderSpriteAnimated(sD, game->menu, screenSize);
 
@@ -651,7 +651,7 @@ void OnGameRender(CameraRect* mainCamera, ScreenData* sD, int screenSize)
 			RenderText(sD, game->playText, screenSize);
 		}
 	}
-	else if(game->gameState == GameSanta::GameState::End)
+	else if(game->gameState == GameData::GameState::End)
 	{
 		RenderSpriteAnimated(sD, game->menu, screenSize);
 
