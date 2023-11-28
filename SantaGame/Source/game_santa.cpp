@@ -1,8 +1,5 @@
 #include "game_santa.h"
 
-#include "drawing.h"
-#include "Emulator/emulator_input.h"
-
 #include <time.h>
 #include <cmath>
 #include <iostream>

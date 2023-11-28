@@ -2,7 +2,8 @@
 #ifndef GAME_SANTA
 #define GAME_SANTA
 
-#include "drawing.h"
+#include "Drawing/drawing.h"
+#include "Input/launcher_input.h"
 
 #include "input_data.h"
 #include "sound_data.h"

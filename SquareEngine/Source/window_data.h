@@ -22,10 +22,9 @@ struct WindowData
 		isRunning = false;
 
 		currentTicks = 0;
-		deltaTicks = 0;
-		begin = 0;
+		deltaTime = 0;
+		startTime = 0;
 		fps = 0;
-		dt = 0;
 
 		camerasSize = 0;
 		cameras = nullptr;
@@ -41,8 +40,8 @@ struct WindowData
 	bool isRunning;
 
 	float currentTicks;
-	float deltaTicks;
-	float begin;
+	float deltaTime;
+	float startTime;
 	float fps;
 	float dt;
 

@@ -9,9 +9,9 @@
 #include "launcher_data.h"
 
 #include "Drawing/cameras.cpp"
+#include "Input/launcher_input.h"
 
 #include "launcher_rendering.h"
-#include "launcher_input.h"
 
 // Global engine data
 WindowData windowData = {};
@@ -29,121 +29,6 @@ OnGameStart gameStart;
 OnGameUpdate gameUpdate;
 OnGameRender gameRender;
 OnGameEnd gameEnd;
-
-void RenderToScreen(HWND hwnd, HDC hdc, float dt)
-{
-    auto* screenData = &windowData.screenData;
-
-    // Clear backbuffer/screen pixels
-    memset(screenData->memory, 0, screenData->nativeWidth * screenData->nativeHeight * 4);
-    memset(screenData->sortDepthBuffer, 0, (screenData->nativeWidth * screenData->nativeHeight) * sizeof(int));
-
-    int screenSize = screenData->nativeWidth * screenData->nativeHeight * 4;
-
-    // Draw launcher (retro console)
-    LauncherRender(screenData, screenSize, &launcherData.rendering, dt);
-
-    // Draw intro animation or game
-    switch(launcherData.state)
-    {
-        case LauncherState::Intro:
-        {
-            LauncherRenderIntro(screenData, screenSize, &launcherData.rendering, dt);
-        }
-        break;
-
-        case LauncherState::GameUpdate:
-        {
-            gameRender(&windowData.cameras[CameraTypes::Gameplay], screenData, screenSize);
-        }
-        break;
-    }
-
-    StretchDIBits(hdc,
-        0,
-        screenData->targetHeight,
-        screenData->targetWidth,
-        -screenData->targetHeight,
-        0,
-        0,
-        screenData->nativeWidth,
-        screenData->nativeHeight,
-        screenData->memory,
-        &screenData->bitmap_info,
-        DIB_RGB_COLORS,
-        SRCCOPY
-    );
-}
-
-void MainLoop()
-{
-    windowData.dt = (clock() - windowData.currentTicks) / 1000.0f;
-    windowData.currentTicks = clock();
-
-    // Input updates
-    while(PeekMessage(&windowData.msg, NULL, 0, 0, PM_REMOVE))
-    {
-        TranslateMessage(&windowData.msg);
-        DispatchMessage(&windowData.msg);
-    }
-
-    if(UpdateControllerStates(&inputData.controller))
-    {
-        inputData.inputType = InputType::Controller;
-    }
-
-    if(UpdateKeyboardStates(&inputData.keyboardMouse))
-    {
-        inputData.inputType = InputType::KeyboardMouse;
-    }
-  
-    // Input checks to change UI icons
-    LauncherUpdateUI(&inputData, &launcherData.rendering);
-
-    DebugCameraMovement(&inputData, &windowData);
-
-    // Update launcher or game (DLL)
-    switch(launcherData.state)
-    {
-        case LauncherState::Intro:
-        {
-            int currentAnimId = launcherData.rendering.introAnimation->currentAnimationID;
-
-            if(launcherData.rendering.introAnimation->currentTime == 
-               launcherData.rendering.introAnimation->animations[currentAnimId].animationTime)
-            {
-                launcherData.state = LauncherState::GameStart;
-            }
-        }
-        break;
-
-        case LauncherState::GameStart:
-        {
-            gameStart(&soundData, &windowData.cameras[CameraTypes::Gameplay]);
-            launcherData.state = LauncherState::GameUpdate;
-        }
-        break;
-
-        case LauncherState::GameUpdate:
-        {
-            gameUpdate(&inputData, &soundData, &windowData.cameras[CameraTypes::Gameplay], windowData.dt);
-        }
-        break;
-    }
-
-    // Rendering
-    RenderToScreen(windowData.window, windowData.hdc, windowData.dt);
-
-    // Update audio
-    cs_mix(soundData.ctx);
-
-    windowData.deltaTicks = clock() - windowData.currentTicks; //the time, in ms, that took to render the scene
-
-    if(windowData.deltaTicks > 0)
-    {
-        windowData.fps = CLOCKS_PER_SEC / windowData.deltaTicks;
-    }
-}
 
 // Win32 messages for input, closing window etc
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg,
@@ -285,7 +170,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLin
 
     // Setup time
     srand(time(NULL));
-    windowData.begin = clock();
+    windowData.startTime = clock();
 
     // Setup audio
     soundData.ctx = cs_make_context(windowData.window, 44100, 8192, 0, NULL);
@@ -294,7 +179,114 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLin
 
     while(windowData.isRunning)
     {
-        MainLoop();
+        windowData.dt = (clock() - windowData.currentTicks) / 1000.0f;
+        windowData.currentTicks = clock();
+
+        // Input updates
+        {
+            while(PeekMessage(&windowData.msg, NULL, 0, 0, PM_REMOVE))
+            {
+                TranslateMessage(&windowData.msg);
+                DispatchMessage(&windowData.msg);
+            }
+
+            if(UpdateControllerStates(&inputData.controller))
+            {
+                inputData.inputType = InputType::Controller;
+            }
+
+            if(UpdateKeyboardStates(&inputData.keyboardMouse))
+            {
+                inputData.inputType = InputType::KeyboardMouse;
+            }
+
+            // Input checks to change UI icons
+            LauncherUpdateUI(&inputData, &launcherData.rendering);
+        }
+
+        DebugCameraMovement(&inputData, &windowData);
+
+        // Update launcher or game (DLL)
+        switch(launcherData.state)
+        {
+            case LauncherState::Intro:
+            {
+                int currentAnimId = launcherData.rendering.introAnimation->currentAnimationID;
+
+                if(launcherData.rendering.introAnimation->currentTime ==
+                    launcherData.rendering.introAnimation->animations[currentAnimId].animationTime)
+                {
+                    launcherData.state = LauncherState::GameStart;
+                }
+            }
+            break;
+
+            case LauncherState::GameStart:
+            {
+                gameStart(&soundData, &windowData.cameras[CameraTypes::Gameplay]);
+                launcherData.state = LauncherState::GameUpdate;
+            }
+            break;
+
+            case LauncherState::GameUpdate:
+            {
+                gameUpdate(&inputData, &soundData, &windowData.cameras[CameraTypes::Gameplay], windowData.dt);
+            }
+            break;
+        }
+
+        // Rendering
+        {
+            auto* screenData = &windowData.screenData;
+
+            // Clear backbuffer/screen pixels
+            memset(screenData->memory, 0, screenData->nativeWidth * screenData->nativeHeight * 4);
+            memset(screenData->sortDepthBuffer, 0, (screenData->nativeWidth * screenData->nativeHeight) * sizeof(int));
+
+            int screenSize = screenData->nativeWidth * screenData->nativeHeight * 4;
+
+            // Draw launcher (retro console)
+            LauncherRender(screenData, screenSize, &launcherData.rendering, windowData.dt);
+
+            // Draw intro animation or game
+            switch(launcherData.state)
+            {
+                case LauncherState::Intro:
+                {
+                    LauncherRenderIntro(screenData, screenSize, &launcherData.rendering, windowData.dt);
+                }
+                break;
+
+                case LauncherState::GameUpdate:
+                {
+                    gameRender(&windowData.cameras[CameraTypes::Gameplay], screenData, screenSize);
+                }
+                break;
+            }
+
+            StretchDIBits(windowData.hdc,
+                0,
+                screenData->targetHeight,
+                screenData->targetWidth,
+                -screenData->targetHeight,
+                0,
+                0,
+                screenData->nativeWidth,
+                screenData->nativeHeight,
+                screenData->memory,
+                &screenData->bitmap_info,
+                DIB_RGB_COLORS,
+                SRCCOPY
+            );
+        }
+
+        // Update audio
+        cs_mix(soundData.ctx);
+
+        if(windowData.deltaTime > 0)
+        {
+            windowData.fps = CLOCKS_PER_SEC / windowData.deltaTime;
+        }
     }
 
     // Clean up any resources etc
