@@ -43,7 +43,6 @@ struct WindowData
 	float deltaTime;
 	float startTime;
 	float fps;
-	float dt;
 
 	int camerasSize;
 	CameraRect* cameras;

@@ -10,7 +10,6 @@
 
 #include "Drawing/cameras.cpp"
 #include "Input/launcher_input.h"
-
 #include "launcher_rendering.h"
 
 // Global engine data
@@ -179,7 +178,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLin
 
     while(windowData.isRunning)
     {
-        windowData.dt = (clock() - windowData.currentTicks) / 1000.0f;
+        windowData.deltaTime = (clock() - windowData.currentTicks) / 1000.0f;
         windowData.currentTicks = clock();
 
         // Input updates
@@ -230,7 +229,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLin
 
             case LauncherState::GameUpdate:
             {
-                gameUpdate(&inputData, &soundData, &windowData.cameras[CameraTypes::Gameplay], windowData.dt);
+                gameUpdate(&inputData, &soundData, &windowData.cameras[CameraTypes::Gameplay], windowData.deltaTime);
             }
             break;
         }
@@ -246,14 +245,14 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLin
             int screenSize = screenData->nativeWidth * screenData->nativeHeight * 4;
 
             // Draw launcher (retro console)
-            LauncherRender(screenData, screenSize, &launcherData.rendering, windowData.dt);
+            LauncherRender(screenData, screenSize, &launcherData.rendering, windowData.deltaTime);
 
             // Draw intro animation or game
             switch(launcherData.state)
             {
                 case LauncherState::Intro:
                 {
-                    LauncherRenderIntro(screenData, screenSize, &launcherData.rendering, windowData.dt);
+                    LauncherRenderIntro(screenData, screenSize, &launcherData.rendering, windowData.deltaTime);
                 }
                 break;
 
