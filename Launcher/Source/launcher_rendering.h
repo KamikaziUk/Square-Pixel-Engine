@@ -1,12 +1,14 @@
 #pragma once
-#ifndef EMULATOR_RENDERING
-#define EMULATOR_RENDERING
+#ifndef LAUNCHER_RENDERING
+#define LAUNCHER_RENDERING
 
-#include "../drawing.h"
+#include "input_data.h"
 
-enum class EmulatorImages : int
+#include "Drawing/drawing.h"
+
+enum class LauncherImages : int
 {
-    Emulator = 0,
+    Launcher = 0,
     Font16,
     Font32,
     ButtonA,
@@ -26,7 +28,7 @@ enum class EmulatorImages : int
     MAX
 };
 
-struct EmulatorRendering
+struct LauncherRendering
 {
     int imagesSize;
     Image* newImages;
@@ -46,12 +48,9 @@ struct EmulatorRendering
     bool isIntro;
 };
 
-#include "input_data.h"
-#include "drawing.h"
-
-void UpdateEmulatorUI(InputData* inputData, EmulatorRendering* emuRe);
-EmulatorRendering EmulatorRenderingSetup(CameraRect* screenCamera);
-void EmulatorRender(ScreenData* screenData, int screenSize, EmulatorRendering* emuRe, float dt);
-void EmulatorRenderIntro(ScreenData* screenData, int screenSize, EmulatorRendering* emuRe, float dt);
+LauncherRendering LauncherRenderingSetup(CameraRect* screenCamera);
+void LauncherUpdateUI(InputData* inputData, LauncherRendering* launcherRendering);
+void LauncherRender(ScreenData* screenData, int screenSize, LauncherRendering* launcherRendering, float deltaTime);
+void LauncherRenderIntro(ScreenData* screenData, int screenSize, LauncherRendering* launcherRendering, float deltaTime);
 
 #endif

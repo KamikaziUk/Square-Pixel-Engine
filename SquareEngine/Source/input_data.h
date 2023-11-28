@@ -2,8 +2,8 @@
 #ifndef INPUT_DATA
 #define INPUT_DATA
 
-#include "keyboard_mouse.h"
-#include "controller.h"
+#include "Input/keyboard_mouse.h"
+#include "Input/controller.h"
 
 enum class InputType
 {

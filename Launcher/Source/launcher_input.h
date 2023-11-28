@@ -1,8 +1,8 @@
 #pragma once
-#ifndef EMULATOR_INPUT
-#define EMULATOR_INPUT
+#ifndef LAUNCHER_INPUT
+#define LAUNCHER_INPUT
 
-#include "../input_data.h"
+#include "input_data.h"
 
 ButtonState GetMenuButton(InputData* inputData);
 ButtonState GetActionButton(InputData* inputData);

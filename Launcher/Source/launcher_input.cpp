@@ -1,4 +1,4 @@
-#include "emulator_input.h"
+#include "launcher_input.h"
 
 ButtonState GetMenuButton(InputData* inputData)
 {

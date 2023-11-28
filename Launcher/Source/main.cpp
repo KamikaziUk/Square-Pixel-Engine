@@ -5,16 +5,17 @@
 
 #include "window_data.h"
 #include "sound_data.h"
-
-#include "drawing.h"
 #include "input_data.h"
-#include "Emulator/emulator_rendering.h"
-#include "Emulator/emulator_input.h"
+#include "launcher_data.h"
+
+#include "launcher_rendering.h"
+#include "launcher_input.h"
 
 // Global engine data
 WindowData windowData = {};
 SoundData soundData = {};
 InputData inputData = {};
+LauncherData launcherData = {};
 
 // GameDLL
 typedef void(__stdcall* OnGameStart)(SoundData* soundData, CameraRect* mainCamera);
@@ -26,17 +27,6 @@ OnGameStart gameStart;
 OnGameUpdate gameUpdate;
 OnGameRender gameRender;
 OnGameEnd gameEnd;
-
-// Emulator data
-enum EmulatorState
-{
-    Intro,
-    SantaGameStart,
-    SantaGameUpdate
-};
-
-EmulatorState emuState = EmulatorState::Intro;
-EmulatorRendering emuRe = {};
 
 // Render cameras
 int camerasSize = 0;
@@ -85,15 +75,21 @@ void RenderToScreen(HWND hwnd, HDC hdc, float dt)
 
     int screenSize = screenData->nativeWidth * screenData->nativeHeight * 4;
 
-    EmulatorRender(screenData, screenSize, &emuRe, dt);
+    LauncherRender(screenData, screenSize, &launcherData.rendering, dt);
 
-    if(emuState == EmulatorState::SantaGameUpdate)
+    switch(launcherData.state)
     {
-        gameRender(&cameras[1], screenData, screenSize);
-    }
-    else if(emuState == EmulatorState::Intro)
-    {
-        EmulatorRenderIntro(screenData, screenSize, &emuRe, dt);
+        case LauncherState::Intro:
+        {
+            LauncherRenderIntro(screenData, screenSize, &launcherData.rendering, dt);
+        }
+        break;
+
+        case LauncherState::GameUpdate:
+        {
+            gameRender(&cameras[1], screenData, screenSize);
+        }
+        break;
     }
 
     StretchDIBits(hdc,
@@ -133,29 +129,39 @@ void MainLoop()
         inputData.inputType = InputType::KeyboardMouse;
     }
   
-    UpdateEmulatorUI(&inputData, &emuRe);
+    LauncherUpdateUI(&inputData, &launcherData.rendering);
 
     CameraMovement();
 
     cameras[1].positionX += gameCameraXSpeed;
     cameras[1].positionY += gameCameraYSpeed;
 
-    if(emuState == EmulatorState::SantaGameStart)
+    switch(launcherData.state)
     {
-        gameStart(&soundData, &cameras[1]);
-
-        emuState = EmulatorState::SantaGameUpdate;
-    }
-    else if(emuState == EmulatorState::SantaGameUpdate)
-    {
-        gameUpdate(&inputData, &soundData, &cameras[1], windowData.dt);
-    }
-    else if(emuState == EmulatorState::Intro)
-    {
-        if(emuRe.introAnimation->currentTime == emuRe.introAnimation->animations[emuRe.introAnimation->currentAnimationID].animationTime)
+        case LauncherState::Intro:
         {
-            emuState = EmulatorState::SantaGameStart;
+            int currentAnimId = launcherData.rendering.introAnimation->currentAnimationID;
+
+            if(launcherData.rendering.introAnimation->currentTime == 
+               launcherData.rendering.introAnimation->animations[currentAnimId].animationTime)
+            {
+                launcherData.state = LauncherState::GameStart;
+            }
         }
+        break;
+
+        case LauncherState::GameStart:
+        {
+            gameStart(&soundData, &cameras[1]);
+            launcherData.state = LauncherState::GameUpdate;
+        }
+        break;
+
+        case LauncherState::GameUpdate:
+        {
+            gameUpdate(&inputData, &soundData, &cameras[1], windowData.dt);
+        }
+        break;
     }
 
     RenderToScreen(windowData.window, windowData.hdc, windowData.dt);
@@ -298,7 +304,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLin
     cameras[0] = CameraRect(0, 0, windowData.screenData.nativeWidth, windowData.screenData.nativeHeight, false);
     cameras[1] = CameraRect(32, 32, 160, 144, true);
 
-    emuRe = EmulatorRenderingSetup(&cameras[0]);
+    launcherData.rendering = LauncherRenderingSetup(&cameras[0]);
 
     printf("emulator render setup \n");
 
@@ -321,13 +327,13 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLin
 
     cs_shutdown_context(soundData.ctx);
 
-    for(int i = 0; i < emuRe.imagesSize; i++)
+    for(int i = 0; i < launcherData.rendering.imagesSize; i++)
     {
-        DestroyImageFromFile(&emuRe.newImages[i]);
+        DestroyImageFromFile(&launcherData.rendering.newImages[i]);
     }
 
-    delete[] emuRe.sprites;
-    delete[] emuRe.newImages;
+    delete[] launcherData.rendering.sprites;
+    delete[] launcherData.rendering.newImages;
 
     delete[]  windowData.screenData.sortDepthBuffer;
 
