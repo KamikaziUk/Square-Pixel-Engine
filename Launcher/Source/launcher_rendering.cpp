@@ -6,7 +6,6 @@ static char textMGGames[] = "MG GAMES";
 
 LauncherRendering LauncherRenderingSetup(CameraRect* screenCamera)
 {
-    // Launcher rendering setup
     LauncherRendering launcherRendering = {};
 
     // Image loading
@@ -67,11 +66,12 @@ LauncherRendering LauncherRenderingSetup(CameraRect* screenCamera)
 
     // Text
     Color greyColor = Color(88, 88, 88);
-    Color darkGreyColor = Color(50, 50, 50);
+    Color darkGreyColor = Color(100, 100, 100);
 
     launcherRendering.textSize = 1;
     launcherRendering.texts = new Text[launcherRendering.textSize];
-    launcherRendering.texts[0] = Text(146, 233, 6, 6, (unsigned)strlen(textMGGames), textMGGames, 16, 3, darkGreyColor, &launcherRendering.newImages[(int)LauncherImages::Font16], screenCamera);
+    launcherRendering.texts[0] = Text(142, 233, 6, 6, (unsigned)strlen(textMGGames), textMGGames, 16, 3, 
+        darkGreyColor, &launcherRendering.newImages[(int)LauncherImages::Font16], screenCamera);
 
     return launcherRendering;
 }

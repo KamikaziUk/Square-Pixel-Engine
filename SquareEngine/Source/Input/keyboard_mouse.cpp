@@ -16,7 +16,7 @@ bool UpdateKeyboardStates(KeyboardMouse* keyboardMouse)
         // Don't count mouse for now
         if(keyHeld && i > 3)
         {
-            return pressedButton;
+            pressedButton = true;
         }
     }
 

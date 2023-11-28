@@ -8,6 +8,8 @@
 #include "input_data.h"
 #include "launcher_data.h"
 
+#include "Drawing/cameras.cpp"
+
 #include "launcher_rendering.h"
 #include "launcher_input.h"
 
@@ -28,55 +30,20 @@ OnGameUpdate gameUpdate;
 OnGameRender gameRender;
 OnGameEnd gameEnd;
 
-// Render cameras
-int camerasSize = 0;
-CameraRect* cameras = nullptr;
-float gameCameraXSpeed = 0;
-float gameCameraYSpeed = 0;
-
-void CameraMovement()
-{
-    // Camera movement
-    const float moveSpeed = 0.1f;
-
-    if(inputData.keyboardMouse.keyStates[(int)KeyCodes::ArrowLeft] == ButtonState::Held)
-    {
-        gameCameraXSpeed = -moveSpeed;
-    }
-    else if(inputData.keyboardMouse.keyStates[(int)KeyCodes::ArrowRight] == ButtonState::Held)
-    {
-        gameCameraXSpeed = moveSpeed;
-    }
-    else
-    {
-        gameCameraXSpeed = 0;
-    }
-
-    if(inputData.keyboardMouse.keyStates[(int)KeyCodes::ArrowUp] == ButtonState::Held)
-    {
-        gameCameraYSpeed = moveSpeed;
-    }
-    else if(inputData.keyboardMouse.keyStates[(int)KeyCodes::ArrowDown] == ButtonState::Held)
-    {
-        gameCameraYSpeed = -moveSpeed;
-    }
-    else
-    {
-        gameCameraYSpeed = 0;
-    }
-}
-
 void RenderToScreen(HWND hwnd, HDC hdc, float dt)
 {
     auto* screenData = &windowData.screenData;
 
+    // Clear backbuffer/screen pixels
     memset(screenData->memory, 0, screenData->nativeWidth * screenData->nativeHeight * 4);
     memset(screenData->sortDepthBuffer, 0, (screenData->nativeWidth * screenData->nativeHeight) * sizeof(int));
 
     int screenSize = screenData->nativeWidth * screenData->nativeHeight * 4;
 
+    // Draw launcher (retro console)
     LauncherRender(screenData, screenSize, &launcherData.rendering, dt);
 
+    // Draw intro animation or game
     switch(launcherData.state)
     {
         case LauncherState::Intro:
@@ -87,7 +54,7 @@ void RenderToScreen(HWND hwnd, HDC hdc, float dt)
 
         case LauncherState::GameUpdate:
         {
-            gameRender(&cameras[1], screenData, screenSize);
+            gameRender(&windowData.cameras[CameraTypes::Gameplay], screenData, screenSize);
         }
         break;
     }
@@ -113,6 +80,7 @@ void MainLoop()
     windowData.dt = (clock() - windowData.currentTicks) / 1000.0f;
     windowData.currentTicks = clock();
 
+    // Input updates
     while(PeekMessage(&windowData.msg, NULL, 0, 0, PM_REMOVE))
     {
         TranslateMessage(&windowData.msg);
@@ -129,13 +97,12 @@ void MainLoop()
         inputData.inputType = InputType::KeyboardMouse;
     }
   
+    // Input checks to change UI icons
     LauncherUpdateUI(&inputData, &launcherData.rendering);
 
-    CameraMovement();
+    DebugCameraMovement(&inputData, &windowData);
 
-    cameras[1].positionX += gameCameraXSpeed;
-    cameras[1].positionY += gameCameraYSpeed;
-
+    // Update launcher or game (DLL)
     switch(launcherData.state)
     {
         case LauncherState::Intro:
@@ -152,20 +119,22 @@ void MainLoop()
 
         case LauncherState::GameStart:
         {
-            gameStart(&soundData, &cameras[1]);
+            gameStart(&soundData, &windowData.cameras[CameraTypes::Gameplay]);
             launcherData.state = LauncherState::GameUpdate;
         }
         break;
 
         case LauncherState::GameUpdate:
         {
-            gameUpdate(&inputData, &soundData, &cameras[1], windowData.dt);
+            gameUpdate(&inputData, &soundData, &windowData.cameras[CameraTypes::Gameplay], windowData.dt);
         }
         break;
     }
 
+    // Rendering
     RenderToScreen(windowData.window, windowData.hdc, windowData.dt);
 
+    // Update audio
     cs_mix(soundData.ctx);
 
     windowData.deltaTicks = clock() - windowData.currentTicks; //the time, in ms, that took to render the scene
@@ -176,6 +145,7 @@ void MainLoop()
     }
 }
 
+// Win32 messages for input, closing window etc
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg,
     WPARAM wParam, LPARAM lParam)
 {
@@ -193,6 +163,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg,
     return DefWindowProcW(hwnd, msg, wParam, lParam);
 }
 
+// Main for launcher
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLine, int nCmdShow)
 {
     printf("starting program \n");
@@ -207,6 +178,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLin
     }
 #endif
 
+    // Load DLL for game
     HINSTANCE gameDLL = LoadLibrary(L"SantaGame.dll");
     if(gameDLL == NULL)
     {
@@ -249,38 +221,39 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLin
         }
     }
 
+    // Win32 window settings
     WNDCLASSW wc = { 0 };
-
     wc.style = CS_HREDRAW | CS_VREDRAW;
     wc.lpszClassName = L"Pixels";
     wc.hInstance = hInstance;
     wc.hbrBackground = GetSysColorBrush(COLOR_3DFACE);
     wc.lpfnWndProc = WndProc;
     wc.hCursor = LoadCursor(0, IDC_ARROW);
+    windowData.screenData.nativeWidth = 224;
+    windowData.screenData.nativeHeight = 248;
 
-     windowData.screenData.nativeWidth = 224;
-     windowData.screenData.nativeHeight = 248;
-
+    // Get window size including border
     int borderSizeWidth = 16;
     int borderSizeHeight = 39;
-
     int actualScreenWidth = (windowData.screenData.nativeWidth + borderSizeWidth) * windowData.scaleWindow;
     int actualScreenHeight = (windowData.screenData.nativeHeight + borderSizeHeight) * windowData.scaleWindow;
 
+    // Get monitor resolution
     int width = GetSystemMetrics(SM_CXSCREEN);
     int height = GetSystemMetrics(SM_CYSCREEN);
 
     RegisterClassW(&wc);
-    windowData.window = CreateWindowW(wc.lpszClassName, L"MG Games Collection",
+    windowData.window = CreateWindowW(wc.lpszClassName, L"Square Engine by MGGames",
         WS_OVERLAPPEDWINDOW | WS_VISIBLE,
         (width / 2) - (actualScreenWidth / 2), (height / 2) - (actualScreenHeight / 2), actualScreenWidth, actualScreenHeight, NULL, NULL, hInstance, NULL);
 
+    // Get size of window for rendering
     RECT rect;
     GetClientRect(windowData.window, &rect);
-     windowData.screenData.targetWidth = rect.right - rect.left;
-     windowData.screenData.targetHeight = rect.bottom - rect.top;
+    windowData.screenData.targetWidth = rect.right - rect.left;
+    windowData.screenData.targetHeight = rect.bottom - rect.top;
 
-     windowData.screenData.memory = VirtualAlloc(0,
+    windowData.screenData.memory = VirtualAlloc(0,
          windowData.screenData.nativeWidth * windowData.screenData.nativeHeight * 4,
         MEM_RESERVE | MEM_COMMIT,
         PAGE_READWRITE
@@ -290,30 +263,31 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLin
 
     windowData.isRunning = true;
 
-     windowData.screenData.sortDepthBuffer = new int[windowData.screenData.nativeWidth * windowData.screenData.nativeHeight];
-     windowData.screenData.bitmap_info.bmiHeader.biSize = sizeof(windowData.screenData.bitmap_info.bmiHeader);
-     windowData.screenData.bitmap_info.bmiHeader.biWidth = windowData.screenData.nativeWidth;
-     windowData.screenData.bitmap_info.bmiHeader.biHeight = windowData.screenData.nativeHeight;
-     windowData.screenData.bitmap_info.bmiHeader.biPlanes = 1;
-     windowData.screenData.bitmap_info.bmiHeader.biBitCount = 32;
-     windowData.screenData.bitmap_info.bmiHeader.biCompression = BI_RGB;
+    // Setup rendering settings
+    windowData.screenData.sortDepthBuffer = new int[windowData.screenData.nativeWidth * windowData.screenData.nativeHeight];
+    windowData.screenData.bitmap_info.bmiHeader.biSize = sizeof(windowData.screenData.bitmap_info.bmiHeader);
+    windowData.screenData.bitmap_info.bmiHeader.biWidth = windowData.screenData.nativeWidth;
+    windowData.screenData.bitmap_info.bmiHeader.biHeight = windowData.screenData.nativeHeight;
+    windowData.screenData.bitmap_info.bmiHeader.biPlanes = 1;
+    windowData.screenData.bitmap_info.bmiHeader.biBitCount = 32;
+    windowData.screenData.bitmap_info.bmiHeader.biCompression = BI_RGB;
+    windowData.hdc = GetDC(windowData.window);
 
     // Cameras
-    camerasSize = 2;
-    cameras = new CameraRect[camerasSize];
-    cameras[0] = CameraRect(0, 0, windowData.screenData.nativeWidth, windowData.screenData.nativeHeight, false);
-    cameras[1] = CameraRect(32, 32, 160, 144, true);
+    windowData.camerasSize = 2;
+    windowData.cameras = new CameraRect[windowData.camerasSize];
+    windowData.cameras[CameraTypes::Launcher] = CameraRect(0, 0, windowData.screenData.nativeWidth, windowData.screenData.nativeHeight, false);
+    windowData.cameras[CameraTypes::Gameplay] = CameraRect(32, 32, 160, 144, true);
 
-    launcherData.rendering = LauncherRenderingSetup(&cameras[0]);
+    launcherData.rendering = LauncherRenderingSetup(&windowData.cameras[CameraTypes::Launcher]);
 
     printf("emulator render setup \n");
 
+    // Setup time
     srand(time(NULL));
-
-    windowData.hdc = GetDC(windowData.window);
-
     windowData.begin = clock();
 
+    // Setup audio
     soundData.ctx = cs_make_context(windowData.window, 44100, 8192, 0, NULL);
 
     printf("finished window setup \n");
@@ -323,7 +297,8 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLin
         MainLoop();
     }
 
-    gameEnd(&soundData, &cameras[1]);
+    // Clean up any resources etc
+    gameEnd(&soundData, &windowData.cameras[CameraTypes::Gameplay]);
 
     cs_shutdown_context(soundData.ctx);
 
@@ -338,6 +313,5 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLin
     delete[]  windowData.screenData.sortDepthBuffer;
 
     srand((unsigned int)time(NULL));
-
     return 0;
 }
