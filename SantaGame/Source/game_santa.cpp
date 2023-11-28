@@ -9,7 +9,7 @@
 
 #define ARRAY_COUNT(arrayName) sizeof(arrayName) / sizeof(arrayName[0])
 
-static GameSanta* game;
+GameSanta* game;
 
 int RandomMinMax(int min, int max)
 {
@@ -198,7 +198,7 @@ void CutePlaySound(cs_context_t* ctx, cs_playing_sound_t* sound, bool loop)
 	}
 }
 
-void OnSantaStart(CameraRect* mainCamera, cs_context_t* ctx)
+void OnGameStart(CameraRect* mainCamera, cs_context_t* ctx)
 {	
 	game = new GameSanta();
 
@@ -317,7 +317,7 @@ void OnSantaStart(CameraRect* mainCamera, cs_context_t* ctx)
 	CuteLoadSound(ctx, "../SantaGame/Assets/Sounds/Lost.wav", &game->audioData.lost, &game->audioData.lostData);
 }
 
-void OnSantaEnd(CameraRect* mainCamera, cs_context_t* ctx)
+void OnGameEnd(CameraRect* mainCamera, cs_context_t* ctx)
 {	
 	cs_free_sound(&game->audioData.musicData);
 	cs_free_sound(&game->audioData.buttonUIData);
@@ -399,7 +399,7 @@ void SpawnMissParticle(GameSanta* game)
 	}
 }
 
-void OnSantaUpdate(CameraRect* mainCamera, XInputController* controller, KeyboardMouse* keyboardMouse, float dt, cs_context_t* ctx)
+void OnGameUpdate(CameraRect* mainCamera, XInputController* controller, KeyboardMouse* keyboardMouse, float dt, cs_context_t* ctx)
 {		
 	game->gameTimer += dt;
 
@@ -633,7 +633,7 @@ void OnSantaUpdate(CameraRect* mainCamera, XInputController* controller, Keyboar
 	}
 }
 
-void OnSantaRender(CameraRect* mainCamera, ScreenData* sD, int screenSize)
+void OnGameRender(CameraRect* mainCamera, ScreenData* sD, int screenSize)
 {	
 	if(game->gameState == GameSanta::GameState::Menu)
 	{

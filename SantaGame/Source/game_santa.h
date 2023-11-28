@@ -204,9 +204,11 @@ struct GameSanta
 };
 
 // NOTE: If changed, remember to update in the main.cpp of launcher
-EXPORTDLL void OnSantaStart(CameraRect* mainCamera, cs_context_t* ctx);
-EXPORTDLL void OnSantaUpdate(CameraRect* mainCamera, XInputController* controller, KeyboardMouse* keyboardMouse, float dt, cs_context_t* ctx);
-EXPORTDLL void OnSantaRender(CameraRect* mainCamera, ScreenData* sD, int screenSize);
-EXPORTDLL void OnSantaEnd(CameraRect* mainCamera, cs_context_t* ctx);
+EXPORTDLL void OnGameStart(CameraRect* mainCamera, cs_context_t* ctx);
+EXPORTDLL void OnGameUpdate(CameraRect* mainCamera, XInputController* controller, KeyboardMouse* keyboardMouse, float dt, cs_context_t* ctx);
+EXPORTDLL void OnGameRender(CameraRect* mainCamera, ScreenData* sD, int screenSize);
+EXPORTDLL void OnGameEnd(CameraRect* mainCamera, cs_context_t* ctx);
+
+extern GameSanta* game;
 
 #endif
