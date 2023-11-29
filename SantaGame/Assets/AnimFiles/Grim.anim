@@ -1,0 +1,13 @@
+AnimCount:2
+// Anim 0
+FrameCount:6
+FrameIDs:0,1,2,3,4,5
+AnimTime:0.5
+Loop:1 
+End
+// Anim 1
+FrameCount:6
+FrameIDs:6,7,8,9,10,11
+AnimTime:0.5
+Loop:0
+End

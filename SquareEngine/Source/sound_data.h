@@ -1,0 +1,21 @@
+#pragma once
+#ifndef SOUND_DATA
+#define SOUND_DATA
+
+#define CUTE_SOUND_IMPLEMENTATION
+#include "External/cute_sound.h"
+
+namespace SquarePixelEngine
+{
+	struct SoundData
+	{
+		SoundData()
+		{
+			ctx = nullptr;
+		}
+
+		cs_context_t* ctx;
+	};
+}
+
+#endif
