@@ -1,39 +1,41 @@
 #include "game_santa.h"
 
-#include <time.h>
-#include <cmath>
-#include <iostream>
-
-#define ARRAY_COUNT(arrayName) sizeof(arrayName) / sizeof(arrayName[0])
+#include "Utilities/math.h"
+#include "Utilities/carray.h"
 
 GameData* game;
 
-int RandomMinMax(int min, int max)
+void CuteLoadSound(SoundData* inputData, const char* soundPath, cs_playing_sound_t* playSound, cs_loaded_sound_t* loadSound)
 {
-	if(min == 0 && max == 0)
+	if(inputData->ctx != nullptr)
 	{
-		return 0;
+		*loadSound = cs_load_wav(soundPath);
+		*playSound = cs_make_playing_sound(loadSound);
 	}
-
-	int random = (rand() % (max - min + 1)) + min;
-	return random;
 }
 
-float clampVal(float min, float max, float value)
+void CutePlaySound(SoundData* soundData, cs_playing_sound_t* sound, bool loop)
 {
-	if(value < min)
-		return min;
+	if(soundData->ctx != nullptr)
+	{
+		cs_insert_sound(soundData->ctx, sound);
+		cs_loop_sound(sound, loop ? 1 : 0);
+	}
+}
 
-	else if(value > max)
-		return max;
-
-	return value;
+void CuteReleaseSound(SoundData* soundData, cs_loaded_sound_t* sound)
+{
+	if(soundData->ctx != nullptr)
+	{
+		cs_free_sound(sound);
+	}
 }
 
 void GenerateBuilding(GameData* game, CameraRect* mainCamera)
 {
 	int currentBuildingId = -1;
 
+	// Find in pool
 	for(int i = 0; i < ARRAY_COUNT(game->buildings); i++)
 	{
 		if(!game->buildings[i].active)
@@ -57,25 +59,37 @@ void GenerateBuilding(GameData* game, CameraRect* mainCamera)
 
 	const auto tileSize = 16;
 
+	// Choose the best roof that fits size
 	if(building->widthSize == 1)
 	{
-		building->roof = Sprite(game->nextBuildingXOffset - tileSize, ((float)(building->heightSize-1) * 16.0f), 1, &game->buildingImages.roofImage1[0], mainCamera);
+		building->roof = Sprite(game->nextBuildingXOffset - tileSize, 
+			((float)(building->heightSize - 1) * 16.0f), 1, 
+			&game->buildingImages.roofImage1[0], mainCamera);
 	}
 	else if(building->widthSize == 2)
 	{
-		building->roof = Sprite(game->nextBuildingXOffset - tileSize, ((float)(building->heightSize - 1) * 16.0f), 1, &game->buildingImages.roofImage2[0], mainCamera);
+		building->roof = Sprite(game->nextBuildingXOffset - tileSize, 
+			((float)(building->heightSize - 1) * 16.0f), 1, 
+			&game->buildingImages.roofImage2[0], mainCamera);
 	}
 	else if(building->widthSize == 3)
 	{
-		building->roof = Sprite(game->nextBuildingXOffset - tileSize, ((float)(building->heightSize - 1) * 16.0f), 1, &game->buildingImages.roofImage3[0], mainCamera);
+		building->roof = Sprite(game->nextBuildingXOffset - tileSize, 
+			((float)(building->heightSize - 1) * 16.0f), 1,
+			&game->buildingImages.roofImage3[0], mainCamera);
 	}
 	else if(building->widthSize == 4)
 	{
-		building->roof = Sprite(game->nextBuildingXOffset - tileSize, ((float)(building->heightSize - 1) * 16.0f), 1, &game->buildingImages.roofImage4[0], mainCamera);
+		building->roof = Sprite(game->nextBuildingXOffset - tileSize, 
+			((float)(building->heightSize - 1) * 16.0f), 1,
+			&game->buildingImages.roofImage4[0], mainCamera);
 	}
 
-	int randomChimney = building->widthSize > 1 ? RandomMinMax(0, building->widthSize-1) : 0;
-	building->chimney = Sprite(game->nextBuildingXOffset + ((float)randomChimney * 16.0f), ((float)(building->heightSize) * 16.0f), 1, &game->buildingImages.chimneyImage, mainCamera);
+	// Random chimney placement
+	int randomChimney = building->widthSize > 1 ? RandomMinMax(0, building->widthSize - 1) : 0;
+	building->chimney = Sprite(
+		game->nextBuildingXOffset + ((float)randomChimney * 16.0f), 
+		((float)(building->heightSize) * 16.0f), 1, &game->buildingImages.chimneyImage, mainCamera);
 
 	building->chimneyParticle.x = building->chimney.x;
 	building->chimneyParticle.y = building->chimney.y + 16;
@@ -105,6 +119,7 @@ void GenerateBuilding(GameData* game, CameraRect* mainCamera)
 
 	if(building->hasChimney)
 	{
+		// Place naughty sign
 		if(building->widthSize >= 2 &&
 			randomChimney < building->widthSize - 1 &&
 			game->nextNaughty <= 0)
@@ -118,6 +133,7 @@ void GenerateBuilding(GameData* game, CameraRect* mainCamera)
 			game->nextNaughty--;
 		}
 
+		// Place life
 		if(!building->isNaughty)
 		{
 			if(game->lives < 2 && game->nextLife <= 0)
@@ -139,6 +155,7 @@ void GenerateBuilding(GameData* game, CameraRect* mainCamera)
 
 	bool buildingType = RandomMinMax(0, 100) < 50;
 
+	// Random building with random windows
 	for(int x = 0; x < building->widthSize; x++)
 	{
 		for(int y = 0; y < building->heightSize; y++)
@@ -170,29 +187,11 @@ void GenerateBuilding(GameData* game, CameraRect* mainCamera)
 				building->buildingBlocks[arrayID] = Sprite(game->nextBuildingXOffset + ((float)x * 16.0f), ((float)y * 16.0f), 1, &game->buildingImages.buildingBlockImage[RandomMinMax(2, 3)], mainCamera);
 			}
 
-			building->windows[arrayID] = Sprite( game->nextBuildingXOffset + ((float)x * 16.0f), ((float)y * 16.0f), 1, &game->buildingImages.windowImages[windowId], mainCamera);
+			building->windows[arrayID] = Sprite(game->nextBuildingXOffset + ((float)x * 16.0f), ((float)y * 16.0f), 1, &game->buildingImages.windowImages[windowId], mainCamera);
 		}
 	}
 
 	game->nextBuildingXOffset += tileSize * (building->widthSize + 1);
-}
-
-void CuteLoadSound(cs_context_t* ctx, const char* soundPath, cs_playing_sound_t* playSound, cs_loaded_sound_t* loadSound)
-{	
-	if(ctx != nullptr)
-	{
-		*loadSound = cs_load_wav(soundPath);
-		*playSound = cs_make_playing_sound(loadSound);
-	}
-}
-
-void CutePlaySound(cs_context_t* ctx, cs_playing_sound_t* sound, bool loop)
-{
-	if(ctx != nullptr)
-	{
-		cs_insert_sound(ctx, sound);
-		cs_loop_sound(sound, loop ? 1 : 0);
-	}
 }
 
 void OnGameStart(SoundData* soundData, CameraRect* mainCamera)
@@ -201,45 +200,46 @@ void OnGameStart(SoundData* soundData, CameraRect* mainCamera)
 
 	game->gameState = GameData::GameState::Menu;
 
+	const auto colorTitle = Color(255, 233, 0);
+
+	// Load images
 	game->santaImage = LoadImageFromFile("../SantaGame/Assets/Sprites/Santa.png");
 	game->skyImage = LoadImageFromFile("../SantaGame/Assets/Sprites/Sky.png");
 	game->backdropImage = LoadImageFromFile("../SantaGame/Assets/Sprites/Backdrop.png");
 	game->cloudImage = LoadImageFromFile("../SantaGame/Assets/Sprites/Clouds.png");
 	game->moonImage = LoadImageFromFile("../SantaGame/Assets/Sprites/Moon.png");
 	game->menuImage = LoadImageFromFile("../SantaGame/Assets/Sprites/Menu.png");
+	game->lifeImage = LoadImageFromFile("../SantaGame/Assets/Sprites/Life.png");
 
 	game->presentImages[0] = LoadImageFromFile("../SantaGame/Assets/Sprites/Present0.png");
 	game->presentImages[1] = LoadImageFromFile("../SantaGame/Assets/Sprites/Present1.png");
 	game->presentImages[2] = LoadImageFromFile("../SantaGame/Assets/Sprites/Present2.png");
 
-	game->lives = ARRAY_COUNT(game->liveSprites);
-
-	game->lifeImage = LoadImageFromFile("../SantaGame/Assets/Sprites/Life.png");
-
+	// Load sprite data
 	for(int i = 0; i < ARRAY_COUNT(game->liveSprites); i++)
 	{
 		game->liveSprites[i] = Sprite(160 - (((float)(i + 1) * 10) + 8), 144 - 16, 0, &game->lifeImage, mainCamera);
 	}
 
-	game->textFont = LoadImageFromFile("../SantaGame/Assets/Fonts/Font16.png");
-
-	game->santa = SpriteAnimated(48, 80, 64, 32, 1, &game->santaImage, mainCamera);
-	LoadAnimation(&game->santa, "../SantaGame/Assets/AnimFiles/Santa.anim");
-
 	game->sky = Sprite(0, 0, 0, &game->skyImage, mainCamera);
 	game->backdrop = Sprite(0, 0, 1, &game->backdropImage, mainCamera);
 	game->clouds = Sprite(0, 0, 1, &game->cloudImage, mainCamera);
 
+	game->santa = SpriteAnimated(48, 80, 64, 32, 1, &game->santaImage, mainCamera);
+	LoadAnimation(&game->santa, "../SantaGame/Assets/AnimFiles/Santa.anim");
+
 	game->menu = SpriteAnimated(0, 0, 160, 144, 1, &game->menuImage, mainCamera);
 	LoadAnimation(&game->menu, "../SantaGame/Assets/AnimFiles/Menu.anim");
 
+	// Load font
+	game->textFont = LoadImageFromFile("../SantaGame/Assets/Fonts/Font16.png");
+
+	// Load text
 	sprintf(game->scoreStr, "SCORE 0");
 	game->scoreText = Text(0, 144 - 16, 6, 6, 7, game->scoreStr, 16, 10, colorWhite, &game->textFont, mainCamera);
 
 	sprintf(game->comboStr, "COMBO 0");
 	game->comboText = Text(0, 144 - 24, 6, 6, 7, game->comboStr, 16, 10, colorWhite, &game->textFont, mainCamera);
-
-	auto colorTitle = Color(255, 233, 0);
 
 	sprintf(game->playStr, "PLAY");
 	game->playText = Text(88, 144 - 54, 6, 6, 4, game->playStr, 16, 10, colorWhite, &game->textFont, mainCamera);
@@ -275,12 +275,7 @@ void OnGameStart(SoundData* soundData, CameraRect* mainCamera)
 	game->buildingImages.lifeParticleImage = LoadImageFromFile("../SantaGame/Assets/Sprites/LifePickup.png");
 	game->buildingImages.naughtySignImage = LoadImageFromFile("../SantaGame/Assets/Sprites/NaughtySign.png");
 
-	for(int y = 0; y < ARRAY_COUNT(game->snowParticleY); y++)
-	{
-		game->snowParticleX[y] = RandomMinMax(0, 256);
-		game->snowParticleY[y] = RandomMinMax(144, 288);
-	}
-
+	// Load building props
 	for(int i = 0; i < ARRAY_COUNT(game->buildings); i++)
 	{
 		game->buildings[i].chimneyParticle = SpriteAnimated(0, 0, 16, 16, 2, &game->buildingImages.chimneyParticleImage, mainCamera);
@@ -295,6 +290,7 @@ void OnGameStart(SoundData* soundData, CameraRect* mainCamera)
 		GenerateBuilding(game, mainCamera);
 	}
 
+	// Load missed particle effects
 	game->missParticleImage = LoadImageFromFile("../SantaGame/Assets/Sprites/MissParticle.png");
 	for(int i = 0; i < ARRAY_COUNT(game->missParticle); i++)
 	{
@@ -302,27 +298,38 @@ void OnGameStart(SoundData* soundData, CameraRect* mainCamera)
 		LoadAnimation(&game->missParticle[i].chimneyParticle, "../SantaGame/Assets/AnimFiles/MissParticle.anim");
 	}
 
-	CuteLoadSound(soundData->ctx, "../SantaGame/Assets/Sounds/Music.wav", &game->audioData.music, &game->audioData.musicData);
-	CutePlaySound(soundData->ctx, &game->audioData.music, true);
+	// Randomize snow particles
+	for(int y = 0; y < ARRAY_COUNT(game->snowParticleY); y++)
+	{
+		game->snowParticleX[y] = RandomMinMax(0, 256);
+		game->snowParticleY[y] = RandomMinMax(144, 288);
+	}
 
-	CuteLoadSound(soundData->ctx, "../SantaGame/Assets/Sounds/ButtonUI.wav", &game->audioData.buttonUI, &game->audioData.buttonUIData);
+	// Load audio data
+	CuteLoadSound(soundData, "../SantaGame/Assets/Sounds/Music.wav", &game->audioData.music, &game->audioData.musicData);
+	CuteLoadSound(soundData, "../SantaGame/Assets/Sounds/ButtonUI.wav", &game->audioData.buttonUI, &game->audioData.buttonUIData);
+	CuteLoadSound(soundData, "../SantaGame/Assets/Sounds/Drop.wav", &game->audioData.drop, &game->audioData.dropData);
+	CuteLoadSound(soundData, "../SantaGame/Assets/Sounds/Hit.wav", &game->audioData.hit, &game->audioData.hitData);
+	CuteLoadSound(soundData, "../SantaGame/Assets/Sounds/Missed.wav", &game->audioData.missed, &game->audioData.missedData);
+	CuteLoadSound(soundData, "../SantaGame/Assets/Sounds/Pickup.wav", &game->audioData.pickup, &game->audioData.pickupData);
+	CuteLoadSound(soundData, "../SantaGame/Assets/Sounds/Lost.wav", &game->audioData.lost, &game->audioData.lostData);
 
-	CuteLoadSound(soundData->ctx, "../SantaGame/Assets/Sounds/Drop.wav", &game->audioData.drop, &game->audioData.dropData);
-	CuteLoadSound(soundData->ctx, "../SantaGame/Assets/Sounds/Hit.wav", &game->audioData.hit, &game->audioData.hitData);
-	CuteLoadSound(soundData->ctx, "../SantaGame/Assets/Sounds/Missed.wav", &game->audioData.missed, &game->audioData.missedData);
-	CuteLoadSound(soundData->ctx, "../SantaGame/Assets/Sounds/Pickup.wav", &game->audioData.pickup, &game->audioData.pickupData);
-	CuteLoadSound(soundData->ctx, "../SantaGame/Assets/Sounds/Lost.wav", &game->audioData.lost, &game->audioData.lostData);
+	// Start music
+	CutePlaySound(soundData, &game->audioData.music, true);
+
+	// Set default lives
+	game->lives = ARRAY_COUNT(game->liveSprites);
 }
 
 void OnGameEnd(SoundData* soundData, CameraRect* mainCamera)
 {	
-	cs_free_sound(&game->audioData.musicData);
-	cs_free_sound(&game->audioData.buttonUIData);
-	cs_free_sound(&game->audioData.dropData);
-	cs_free_sound(&game->audioData.hitData);
-	cs_free_sound(&game->audioData.missedData);
-	cs_free_sound(&game->audioData.pickupData);
-	cs_free_sound(&game->audioData.lostData);
+	CuteReleaseSound(soundData, &game->audioData.musicData);
+	CuteReleaseSound(soundData, &game->audioData.buttonUIData);
+	CuteReleaseSound(soundData, &game->audioData.dropData);
+	CuteReleaseSound(soundData, &game->audioData.hitData);
+	CuteReleaseSound(soundData, &game->audioData.missedData);
+	CuteReleaseSound(soundData, &game->audioData.pickupData);
+	CuteReleaseSound(soundData, &game->audioData.lostData);
 
 	delete game;
 	game = nullptr;
@@ -337,12 +344,10 @@ void UpdateHUD(GameData* game)
 	game->comboText.stringLength = 6 + ((game->combo / 10) + 1);
 }
 
-void GameOver(cs_context_t* ctx, GameData* game, CameraRect* mainCamera)
+// Update final UI & play sound when game over
+void GameOver(SoundData* soundData, GameData* game, CameraRect* mainCamera)
 {
 	game->gameState = GameData::GameState::End;
-
-	auto color2Title = Color(105, 157, 66);
-	auto colorTitle = Color(255, 233, 0);
 
 	sprintf(game->titleStr, "LAST %d", game->score);
 	game->titleText.stringLength = 6 + ((game->score / 10) + 1);
@@ -355,12 +360,13 @@ void GameOver(cs_context_t* ctx, GameData* game, CameraRect* mainCamera)
 	sprintf(game->titleStr2, "BEST %d", game->bestScore);
 	game->titleText2.stringLength = 6 + ((game->bestScore / 10) + 1);
 
-	CutePlaySound(ctx, &game->audioData.lost, false);
+	CutePlaySound(soundData, &game->audioData.lost, false);
 
 	game->delayTimer = 0.5f;
 }
 
-void DropPresent(cs_context_t* ctx, GameData* game, CameraRect* mainCamera)
+// Spawn present that falls
+void DropPresent(SoundData* soundData, GameData* game, CameraRect* mainCamera)
 {
 	for(int i = 0; i < ARRAY_COUNT(game->presents); i++)
 	{
@@ -375,12 +381,13 @@ void DropPresent(cs_context_t* ctx, GameData* game, CameraRect* mainCamera)
 			game->santa.currentAnimationID = 1;
 			game->santa.currentTime = 0.0f;
 
-			CutePlaySound(ctx, &game->audioData.drop, false);
+			CutePlaySound(soundData, &game->audioData.drop, false);
 			break;
 		}
 	}
 }
 
+// Spawn miss particle from pool
 void SpawnMissParticle(GameData* game)
 {
 	for(int i = 0; i < ARRAY_COUNT(game->missParticle); i++)
@@ -399,16 +406,17 @@ void SpawnMissParticle(GameData* game)
 void OnGameUpdate(InputData* inputData, SoundData* soundData, CameraRect* mainCamera, float deltaTime)
 {		
 	game->gameTimer += deltaTime;
-
 	game->delayTimer -= deltaTime;
 
 	if(game->gameState == GameData::GameState::Menu)
 	{
+		// Start the game
 		if(game->delayTimer <= 0.0f && GetActionButton(inputData) == ButtonState::Down)
 		{
 			game->gameState = GameData::GameState::Game;
 		}
 
+		// Show a little santa animation & flicker text
 		UpdateSpriteAnimated(&game->menu, deltaTime);
 
 		game->flickerTimer += deltaTime * 0.5f;
@@ -420,6 +428,7 @@ void OnGameUpdate(InputData* inputData, SoundData* soundData, CameraRect* mainCa
 	}
 	else if(game->gameState == GameData::GameState::End)
 	{
+		// Restart the game
 		if(game->delayTimer <= 0.0f && GetActionButton(inputData) == ButtonState::Down)
 		{
 			game->gameState = GameData::GameState::Game;
@@ -430,7 +439,7 @@ void OnGameUpdate(InputData* inputData, SoundData* soundData, CameraRect* mainCa
 			game->combo = 0;
 			game->gameTimer = 0.0f;
 
-			CutePlaySound(soundData->ctx, &game->audioData.buttonUI, false);
+			CutePlaySound(soundData, &game->audioData.buttonUI, false);
 
 			for(int i = 0; i < ARRAY_COUNT(game->missParticle); i++)
 			{
@@ -438,6 +447,7 @@ void OnGameUpdate(InputData* inputData, SoundData* soundData, CameraRect* mainCa
 			}
 		}
 
+		// Animated background
 		UpdateSpriteAnimated(&game->menu, deltaTime);
 
 		game->flickerTimer += deltaTime * 0.5f;
@@ -449,13 +459,14 @@ void OnGameUpdate(InputData* inputData, SoundData* soundData, CameraRect* mainCa
 	}
 	else
 	{
+		// Drop present when user presses button
 		if(game->delayTimer <= 0.0f && GetActionButton(inputData) == ButtonState::Down)
 		{
-			DropPresent(soundData->ctx, game, mainCamera);
+			DropPresent(soundData, game, mainCamera);
 		}
 
-		auto scrollSpeed = 96.0f + (66.0f * clampVal(0.0f, 1.0f, game->gameTimer / 90.0f));
-
+		// Scroll buildings and generate new ones
+		const auto scrollSpeed = 96.0f + (66.0f * Clamp(0.0f, 1.0f, game->gameTimer / 90.0f));
 		for(int i = 0; i < ARRAY_COUNT(game->buildings); i++)
 		{
 			if(game->buildings[i].active)
@@ -491,8 +502,8 @@ void OnGameUpdate(InputData* inputData, SoundData* soundData, CameraRect* mainCa
 			}
 		}
 
-		float gravitySpeed = 128.0f;
-
+		// Fall (gravitySpeed) pixels per second
+		const float gravitySpeed = 128.0f;
 		for(int i = 0; i < ARRAY_COUNT(game->presents); i++)
 		{
 			if(game->presents[i].active)
@@ -503,6 +514,7 @@ void OnGameUpdate(InputData* inputData, SoundData* soundData, CameraRect* mainCa
 				game->presents[i].aabb.x = game->presents[i].sprite.x;
 				game->presents[i].aabb.y = game->presents[i].sprite.y;
 
+				// Gone off screen, so we reduce lives
 				if(game->presents[i].sprite.y < -32.0f)
 				{
 					game->presents[i].active = false;
@@ -511,18 +523,19 @@ void OnGameUpdate(InputData* inputData, SoundData* soundData, CameraRect* mainCa
 					game->combo = 0;
 					UpdateHUD(game);
 
-					CutePlaySound(soundData->ctx, &game->audioData.missed, false);
+					CutePlaySound(soundData, &game->audioData.missed, false);
 
 					SpawnMissParticle(game);
 
 					if(game->lives <= 0)
 					{
-						GameOver(soundData->ctx, game, mainCamera);
+						GameOver(soundData, game, mainCamera);
 					}
 				}
 			}
 		}
 
+		// Update presents to see if we hit chimney
 		for(int i = 0; i < ARRAY_COUNT(game->presents); i++)
 		{
 			if(game->presents[i].active)
@@ -534,30 +547,30 @@ void OnGameUpdate(InputData* inputData, SoundData* soundData, CameraRect* mainCa
 						auto aabb0 = game->presents[i].aabb;
 						auto aabb1 = game->buildings[j].chimneyAABB;
 
-						if(aabb0.x < aabb1.x + aabb1.w &&
-							aabb0.x + aabb0.w > aabb1.x &&
-							aabb0.y < aabb1.y + aabb1.h &&
-							aabb0.h + aabb0.y > aabb1.y)
+						// Inside bounds
+						if(aabb0 < aabb1)
 						{
 							game->presents[i].active = false;
 
+							// We hit the naughty sign, so reduce lives
 							if(game->buildings[j].isNaughty)
 							{
 								game->combo = 0;
 								game->lives--;
 
-								CutePlaySound(soundData->ctx, &game->audioData.missed, false);
+								CutePlaySound(soundData, &game->audioData.missed, false);
 
 								SpawnMissParticle(game);
 							}
 							else
 							{
+								// We hit the normal chimney, so increase score
 								game->buildings[j].chimneyParticle.currentTime = 0.0f;
 
 								game->combo += 1;
 								game->score += game->combo;
 
-								CutePlaySound(soundData->ctx, &game->audioData.hit, false);
+								CutePlaySound(soundData, &game->audioData.hit, false);
 							}
 
 							UpdateHUD(game);
@@ -567,17 +580,15 @@ void OnGameUpdate(InputData* inputData, SoundData* soundData, CameraRect* mainCa
 						{
 							auto aabb2 = game->buildings[j].lifeAABB;
 
-							if(aabb0.x < aabb2.x + aabb2.w &&
-								aabb0.x + aabb0.w > aabb2.x &&
-								aabb0.y < aabb2.y + aabb2.h &&
-								aabb0.h + aabb0.y > aabb2.y)
+							// Inside bounds of the extra life powerup, so reduce lives
+							if(aabb0 < aabb2)
 							{
 								game->presents[i].active = false;
 
 								game->buildings[j].lifeActive = false;
-								game->lives = clampVal(0, 3, game->lives + 1);
+								game->lives = Clamp(0, 3, game->lives + 1);
 
-								CutePlaySound(soundData->ctx, &game->audioData.pickup, false);
+								CutePlaySound(soundData, &game->audioData.pickup, false);
 
 								UpdateHUD(game);
 							}
@@ -587,6 +598,7 @@ void OnGameUpdate(InputData* inputData, SoundData* soundData, CameraRect* mainCa
 			}
 		}
 
+		// Scroll backdrop
 		game->nextBuildingXOffset -= scrollSpeed * deltaTime;
 		game->skyScrollX = fmod(game->skyScrollX - (scrollSpeed * 0.4f * deltaTime), 160);
 		game->backScrollX = fmod(game->backScrollX - (scrollSpeed * 0.5f * deltaTime), 160);
@@ -599,6 +611,7 @@ void OnGameUpdate(InputData* inputData, SoundData* soundData, CameraRect* mainCa
 			game->santa.currentTime = 0.0f;
 		}
 
+		// Update santa character animations
 		UpdateSpriteAnimated(&game->santa, deltaTime);
 
 		// Snow particles
@@ -632,6 +645,7 @@ void OnGameUpdate(InputData* inputData, SoundData* soundData, CameraRect* mainCa
 
 void OnGameRender(CameraRect* mainCamera, ScreenData* sD, int screenSize)
 {	
+	// Render main menu
 	if(game->gameState == GameData::GameState::Menu)
 	{
 		RenderSpriteAnimated(sD, game->menu, screenSize);
@@ -648,6 +662,7 @@ void OnGameRender(CameraRect* mainCamera, ScreenData* sD, int screenSize)
 			RenderText(sD, game->playText, screenSize);
 		}
 	}
+	// Render game over screen
 	else if(game->gameState == GameData::GameState::End)
 	{
 		RenderSpriteAnimated(sD, game->menu, screenSize);
@@ -661,13 +676,16 @@ void OnGameRender(CameraRect* mainCamera, ScreenData* sD, int screenSize)
 			RenderText(sD, game->playText, screenSize);
 		}
 	}
+	// Render game view
 	else
 	{
+		// Render background
 		RenderScrollSprite(sD, game->sky, screenSize, (int)game->skyScrollX);
 		RenderScrollSprite(sD, game->backdrop, screenSize, (int)game->backScrollX);
 		RenderScrollSprite(sD, game->clouds, screenSize, (int)game->cloudScrollX);
 		RenderSpriteAnimated(sD, game->santa, screenSize);
 
+		// Render presents
 		for(int i = 0; i < ARRAY_COUNT(game->presents); i++)
 		{
 			if(game->presents[i].active)
@@ -676,6 +694,7 @@ void OnGameRender(CameraRect* mainCamera, ScreenData* sD, int screenSize)
 			}
 		}
 
+		// Render buildings
 		for(int i = 0; i < ARRAY_COUNT(game->buildings); i++)
 		{
 			if(!game->buildings[i].active)
@@ -709,6 +728,7 @@ void OnGameRender(CameraRect* mainCamera, ScreenData* sD, int screenSize)
 			RenderSprite(sD, game->buildings[i].foreground, screenSize);
 		}
 
+		// Render UI
 		for(int i = 0; i < game->lives; i++)
 		{
 			RenderSprite(sD, game->liveSprites[i], screenSize);
@@ -717,6 +737,7 @@ void OnGameRender(CameraRect* mainCamera, ScreenData* sD, int screenSize)
 		RenderText(sD, game->scoreText, screenSize);
 		RenderText(sD, game->comboText, screenSize);
 
+		// Render miss particles
 		for(int i = 0; i < ARRAY_COUNT(game->missParticle); i++)
 		{
 			if(game->missParticle[i].active)

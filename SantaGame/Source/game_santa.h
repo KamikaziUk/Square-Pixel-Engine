@@ -11,37 +11,7 @@
 #define CUTE_SOUND_IMPLEMENTATION
 #include "External/cute_sound.h"
 
-#ifdef GAME_EXPORTS
-#define GAME_API __declspec(dllexport)
-#else
-#define GAME_API __declspec(dllimport)
-#endif
-
-#define EXPORTDLL extern "C" GAME_API
-
-struct AABB
-{
-	float x;
-	float y;
-	float w;
-	float h;
-
-	AABB()
-	{		
-		x = 0;
-		y = 0;
-		w = 0;
-		h = 0;
-	}
-
-	AABB(float inX, float inY, float inW, float inH)
-	{
-		x = inX;
-		y = inY;
-		w = inW;
-		h = inH;
-	}
-};
+#include "Utilities/aabb.h"
 
 struct Present
 {
@@ -206,11 +176,7 @@ struct GameData
 	GameState gameState;
 };
 
-// NOTE: If changed, remember to update in the main.cpp of launcher
-EXPORTDLL void OnGameStart(SoundData* soundData, CameraRect* mainCamera);
-EXPORTDLL void OnGameUpdate(InputData* inputData, SoundData* soundData, CameraRect* mainCamera, float deltaTime);
-EXPORTDLL void OnGameRender(CameraRect* mainCamera, ScreenData* sD, int screenSize);
-EXPORTDLL void OnGameEnd(SoundData* soundData, CameraRect* mainCamera);
+#include "Utilities/game_export.h"
 
 extern GameData* game;
 

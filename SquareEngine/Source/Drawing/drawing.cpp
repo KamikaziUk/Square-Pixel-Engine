@@ -1,18 +1,9 @@
 #include "drawing.h"
 
+#include "Utilities/math.h"
+
 #define STB_IMAGE_IMPLEMENTATION
 #include "External/stb_image.h"
-
-float clamp(float min, float max, float value)
-{
-    if(value < min)
-        return min;
-
-    else if(value > max)
-        return max;
-
-    return value;
-}
 
 Image LoadImageFromFile(const char* fileName)
 {
@@ -399,7 +390,7 @@ void RenderSpriteAnimated(ScreenData* screenData, SpriteAnimated spriteAnim, int
     int cameraOffsetY = spriteAnim.cameraRect->screenY;
 
     // Calculate current tile ID
-    float animTime01 = clamp(0.0f, 1.0f, (float)spriteAnim.currentTime / (float)spriteAnim.animations[spriteAnim.currentAnimationID].animationTime);
+    float animTime01 = Clamp(0.0f, 1.0f, (float)spriteAnim.currentTime / (float)spriteAnim.animations[spriteAnim.currentAnimationID].animationTime);
     int frameID = (int)floorf(animTime01 * (float)(spriteAnim.animations[spriteAnim.currentAnimationID].frameCount - 1));
     int tileID = spriteAnim.animations[spriteAnim.currentAnimationID].frames[frameID];
 
