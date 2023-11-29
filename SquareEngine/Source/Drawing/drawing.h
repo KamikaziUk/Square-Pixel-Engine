@@ -31,8 +31,13 @@ namespace SquarePixelEngine
     {
         CameraRect()
         {
-            screenX = 0; screenY = 0;
-            width = 0; height = 0;
+            screenX = 0; 
+            screenY = 0;
+            width = 0; 
+            height = 0;
+            gameCamera = false;
+            positionX = 0;
+            positionY = 0;
         }
 
         CameraRect(int inScreenX, int inScreenY, int inWidth, int inHeight, bool inGameCamera)
@@ -42,16 +47,18 @@ namespace SquarePixelEngine
             width = inWidth;
             height = inHeight;
             gameCamera = inGameCamera;
+            positionX = 0;
+            positionY = 0;
         }
 
         bool gameCamera;
-        int screenX = 0;
-        int screenY = 0;
-        int width = 0;
-        int height = 0;
+        int screenX;
+        int screenY;
+        int width;
+        int height;
 
-        float positionX = 0;
-        float positionY = 0;
+        float positionX;
+        float positionY;
     };
 
     struct ScreenData
@@ -62,11 +69,10 @@ namespace SquarePixelEngine
         int nativeWidth = 0;
         int nativeHeight = 0;
 
-        void* memory;
+        void* memory = nullptr;
+        int* sortDepthBuffer = nullptr;
 
-        BITMAPINFO bitmap_info;
-
-        int* sortDepthBuffer;
+        BITMAPINFO bitmap_info = {};
     };
 
     struct Image

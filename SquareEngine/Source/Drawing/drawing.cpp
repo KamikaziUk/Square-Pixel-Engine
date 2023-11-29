@@ -31,6 +31,7 @@ namespace SquarePixelEngine
                 color.r = img[currentID++];
                 color.g = img[currentID++];
                 color.b = img[currentID++];
+                color.a = 255;
 
                 if(newImage.channels >= 4)
                 {

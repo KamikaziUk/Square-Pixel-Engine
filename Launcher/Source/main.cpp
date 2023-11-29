@@ -59,9 +59,9 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLin
     // Setup console
     {
         AllocConsole();
-        freopen("CONIN$", "r", stdin);
-        freopen("CONOUT$", "w", stdout);
-        freopen("CONOUT$", "w", stderr);
+        auto consoleFile0 = freopen("CONIN$", "r", stdin);
+        auto consoleFile1 = freopen("CONOUT$", "w", stdout);
+        auto consoleFile2 = freopen("CONOUT$", "w", stderr);
     }
 #endif
 

@@ -216,7 +216,7 @@ namespace SantaGame
 	{
 		game = new GameData();
 
-		game->gameState = GameData::GameState::Menu;
+		game->gameState = GameState::Menu;
 
 		const auto colorTitle = Color(255, 233, 0);
 
@@ -339,7 +339,7 @@ namespace SantaGame
 		// Start music
 		CutePlaySound(soundData, &game->audioData.music, true);
 
-		// Set default lives
+		game->score = 0;
 		game->lives = ARRAY_COUNT(game->liveSprites);
 	}
 
@@ -369,7 +369,7 @@ namespace SantaGame
 	// Update final UI & play sound when game over
 	void GameOver(const SoundData* soundData, GameData* game)
 	{
-		game->gameState = GameData::GameState::End;
+		game->gameState = GameState::End;
 
 		sprintf_s(game->titleStr, "LAST %d", game->score);
 		game->titleText.stringLength = 6 + ((game->score / 10) + 1);
@@ -430,12 +430,12 @@ namespace SantaGame
 		game->gameTimer += deltaTime;
 		game->delayTimer -= deltaTime;
 
-		if(game->gameState == GameData::GameState::Menu)
+		if(game->gameState == GameState::Menu)
 		{
 			// Start the game
 			if(game->delayTimer <= 0.0f && GetActionButton(inputData) == ButtonState::Down)
 			{
-				game->gameState = GameData::GameState::Game;
+				game->gameState = GameState::Game;
 			}
 
 			// Show a little santa animation & flicker text
@@ -448,12 +448,12 @@ namespace SantaGame
 				game->flickerTimer = 0.0f;
 			}
 		}
-		else if(game->gameState == GameData::GameState::End)
+		else if(game->gameState == GameState::End)
 		{
 			// Restart the game
 			if(game->delayTimer <= 0.0f && GetActionButton(inputData) == ButtonState::Down)
 			{
-				game->gameState = GameData::GameState::Game;
+				game->gameState = GameState::Game;
 				game->delayTimer = 0.5f;
 
 				game->lives = 3;
@@ -670,7 +670,7 @@ namespace SantaGame
 	void OnGameRender(CameraRect* mainCamera, ScreenData* sD, int screenSize)
 	{
 		// Render main menu
-		if(game->gameState == GameData::GameState::Menu)
+		if(game->gameState == GameState::Menu)
 		{
 			RenderSpriteAnimated(sD, game->menu, screenSize);
 
@@ -687,7 +687,7 @@ namespace SantaGame
 			}
 		}
 		// Render game over screen
-		else if(game->gameState == GameData::GameState::End)
+		else if(game->gameState == GameState::End)
 		{
 			RenderSpriteAnimated(sD, game->menu, screenSize);
 

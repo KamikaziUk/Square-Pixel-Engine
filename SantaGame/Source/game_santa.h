@@ -20,9 +20,9 @@ namespace SantaGame
 {
 	struct Present
 	{
-		Sprite sprite;
-		bool active;
+		bool active = false;
 
+		Sprite sprite;
 		AABB aabb;
 	};
 
@@ -45,7 +45,7 @@ namespace SantaGame
 
 	struct Building
 	{
-		bool active;
+		bool active = false;
 
 		int widthSize;
 		int heightSize;
@@ -102,15 +102,15 @@ namespace SantaGame
 		cs_playing_sound_t lost;
 	};
 
+	enum class GameState
+	{
+		Menu = 0,
+		Game,
+		End
+	};
+
 	struct GameData
 	{
-		enum GameState
-		{
-			Menu,
-			Game,
-			End
-		};
-
 		Image santaImage;
 		Image skyImage;
 		Image backdropImage;
@@ -139,8 +139,8 @@ namespace SantaGame
 		Text titleText2;
 		char titleStr2[32];
 
+		int score = 0;
 		int bestScore;
-		int score;
 		Text scoreText;
 		char scoreStr[32];
 
