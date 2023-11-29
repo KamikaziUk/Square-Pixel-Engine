@@ -8,7 +8,7 @@ using namespace Utilities;
 
 namespace SantaGame
 {
-	GameData* game;
+	GameData* game = nullptr;
 
 	void CuteLoadSound(const SoundData* inputData, const char* soundPath, cs_playing_sound_t* playSound, cs_loaded_sound_t* loadSound)
 	{
@@ -345,6 +345,11 @@ namespace SantaGame
 
 	void OnGameEnd(SoundData* soundData, CameraRect* mainCamera)
 	{
+		if(game == nullptr)
+		{
+			return;
+		}
+
 		CuteReleaseSound(soundData, &game->audioData.musicData);
 		CuteReleaseSound(soundData, &game->audioData.buttonUIData);
 		CuteReleaseSound(soundData, &game->audioData.dropData);

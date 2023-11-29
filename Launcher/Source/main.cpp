@@ -298,7 +298,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLin
     // Clean up any resources etc
     gameEnd(&soundData, &windowData.cameras[CameraTypes::Gameplay]);
 
-    cs_shutdown_context(soundData.ctx);
+    //cs_shutdown_context(soundData.ctx);
 
     for(int i = 0; i < launcherData.rendering.imagesSize; i++)
     {
