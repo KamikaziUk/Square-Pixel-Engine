@@ -1,28 +1,31 @@
 #include "button_states.h"
 
-void UpdateButtonState(ButtonState* state, bool pressed)
+namespace SquarePixelEngine
 {
-    if(pressed)
+    void UpdateButtonState(ButtonState* state, bool pressed)
     {
-        if(*state == ButtonState::None)
+        if(pressed)
         {
-            *state = ButtonState::Down;
+            if(*state == ButtonState::None)
+            {
+                *state = ButtonState::Down;
+            }
+            else if(*state == ButtonState::Down)
+            {
+                *state = ButtonState::Held;
+            }
         }
-        else if(*state == ButtonState::Down)
+        else
         {
-            *state = ButtonState::Held;
-        }
-    }
-    else
-    {
-        if(*state == ButtonState::Down ||
-            *state == ButtonState::Held)
-        {
-            *state = ButtonState::Up;
-        }
-        else if(*state == ButtonState::Up)
-        {
-            *state = ButtonState::None;
+            if(*state == ButtonState::Down ||
+                *state == ButtonState::Held)
+            {
+                *state = ButtonState::Up;
+            }
+            else if(*state == ButtonState::Up)
+            {
+                *state = ButtonState::None;
+            }
         }
     }
 }

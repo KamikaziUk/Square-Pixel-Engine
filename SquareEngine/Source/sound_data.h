@@ -5,9 +5,12 @@
 #define CUTE_SOUND_IMPLEMENTATION
 #include "External/cute_sound.h"
 
-struct SoundData
+namespace SquarePixelEngine
 {
-	cs_context_t* ctx;
-};
+	struct SoundData
+	{
+		cs_context_t* ctx;
+	};
+}
 
 #endif

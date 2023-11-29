@@ -13,6 +13,9 @@
 
 #include "Utilities/aabb.h"
 
+using namespace SquarePixelEngine;
+using namespace Utilities;
+
 struct Present
 {
 	Sprite sprite;
@@ -176,7 +179,7 @@ struct GameData
 	GameState gameState;
 };
 
-#include "Utilities/game_export.h"
+#include "game_export.h"
 
 extern GameData* game;
 

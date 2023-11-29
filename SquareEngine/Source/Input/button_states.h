@@ -2,14 +2,17 @@
 #ifndef BUTTONSTATES
 #define BUTTONSTATES
 
-enum class ButtonState
+namespace SquarePixelEngine
 {
-    None,
-    Down,
-    Held,
-    Up
-};
+    enum class ButtonState
+    {
+        None,
+        Down,
+        Held,
+        Up
+    };
 
-void UpdateButtonState(ButtonState* state, bool pressed);
+    void UpdateButtonState(ButtonState* state, bool pressed);
+}
 
 #endif

@@ -12,6 +12,8 @@
 #include "Input/launcher_input.h"
 #include "launcher_rendering.h"
 
+using namespace MainLauncher;
+
 // Global engine data
 WindowData windowData = {};
 SoundData soundData = {};

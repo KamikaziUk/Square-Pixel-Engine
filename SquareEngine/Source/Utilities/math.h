@@ -4,26 +4,29 @@
 
 #include <cmath>
 
-inline int RandomMinMax(int min, int max)
+namespace Utilities
 {
-	if(min == 0 && max == 0)
+	inline int RandomMinMax(int min, int max)
 	{
-		return 0;
+		if(min == 0 && max == 0)
+		{
+			return 0;
+		}
+
+		int random = (rand() % (max - min + 1)) + min;
+		return random;
 	}
 
-	int random = (rand() % (max - min + 1)) + min;
-	return random;
-}
+	inline float Clamp(float min, float max, float value)
+	{
+		if(value < min)
+			return min;
 
-inline float Clamp(float min, float max, float value)
-{
-	if(value < min)
-		return min;
+		else if(value > max)
+			return max;
 
-	else if(value > max)
-		return max;
-
-	return value;
+		return value;
+	}
 }
 
 #endif

@@ -4,50 +4,53 @@
 
 #include "Drawing/drawing.h"
 
-enum CameraTypes : int
+namespace SquarePixelEngine
 {
-	Launcher = 0,
-	Gameplay
-};
-
-struct WindowData
-{
-	WindowData()
+	enum CameraTypes : int
 	{
-		screenData = {};
-		msg = {};
-		window = {};
-		hdc = {};
-		scaleWindow = 2;
-		isRunning = false;
+		Launcher = 0,
+		Gameplay
+	};
 
-		currentTicks = 0;
-		deltaTime = 0;
-		startTime = 0;
-		fps = 0;
+	struct WindowData
+	{
+		WindowData()
+		{
+			screenData = {};
+			msg = {};
+			window = {};
+			hdc = {};
+			scaleWindow = 2;
+			isRunning = false;
 
-		camerasSize = 0;
-		cameras = nullptr;
-		gameCameraXSpeed = 0;
-		gameCameraYSpeed = 0;
-	}
+			currentTicks = 0;
+			deltaTime = 0;
+			startTime = 0;
+			fps = 0;
 
-	ScreenData screenData;
-	MSG msg;
-	HWND window;
-	HDC hdc;
-	int scaleWindow;
-	bool isRunning;
+			camerasSize = 0;
+			cameras = nullptr;
+			gameCameraXSpeed = 0;
+			gameCameraYSpeed = 0;
+		}
 
-	float currentTicks;
-	float deltaTime;
-	float startTime;
-	float fps;
+		ScreenData screenData;
+		MSG msg;
+		HWND window;
+		HDC hdc;
+		int scaleWindow;
+		bool isRunning;
 
-	int camerasSize;
-	CameraRect* cameras;
-	float gameCameraXSpeed;
-	float gameCameraYSpeed;
-};
+		float currentTicks;
+		float deltaTime;
+		float startTime;
+		float fps;
+
+		int camerasSize;
+		CameraRect* cameras;
+		float gameCameraXSpeed;
+		float gameCameraYSpeed;
+	};
+}
 
 #endif

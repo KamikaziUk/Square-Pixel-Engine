@@ -4,21 +4,24 @@
 #include "button_states.h"
 #include "keyboard_mouse.h"
 
-bool UpdateKeyboardStates(KeyboardMouse* keyboardMouse)
+namespace SquarePixelEngine
 {
-    bool pressedButton = false;
-
-    for(int i = 0; i < 256; i++)
+    bool UpdateKeyboardStates(KeyboardMouse* keyboardMouse)
     {
-        bool keyHeld = (GetAsyncKeyState(i) & (1 << 16));
-        UpdateButtonState(&keyboardMouse->keyStates[i], keyHeld);
+        bool pressedButton = false;
 
-        // Don't count mouse for now
-        if(keyHeld && i > 3)
+        for(int i = 0; i < 256; i++)
         {
-            pressedButton = true;
-        }
-    }
+            bool keyHeld = (GetAsyncKeyState(i) & (1 << 16));
+            UpdateButtonState(&keyboardMouse->keyStates[i], keyHeld);
 
-    return pressedButton;
+            // Don't count mouse for now
+            if(keyHeld && i > 3)
+            {
+                pressedButton = true;
+            }
+        }
+
+        return pressedButton;
+    }
 }

@@ -4,23 +4,26 @@
 
 #include "launcher_rendering.h"
 
-enum class LauncherState
+namespace MainLauncher
 {
-    Intro,
-    GameStart,
-    GameUpdate
-};
-
-struct LauncherData
-{
-    LauncherData()
+    enum class LauncherState
     {
-        state = LauncherState::Intro;
-        rendering = {};
-    }
+        Intro,
+        GameStart,
+        GameUpdate
+    };
 
-    LauncherState state;
-    LauncherRendering rendering;
-};
+    struct LauncherData
+    {
+        LauncherData()
+        {
+            state = LauncherState::Intro;
+            rendering = {};
+        }
+
+        LauncherState state;
+        LauncherRendering rendering;
+    };
+}
 
 #endif

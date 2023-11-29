@@ -1,5 +1,8 @@
 #include "game_santa.h"
 
+using namespace SquarePixelEngine;
+using namespace Utilities;
+
 #include "Utilities/math.h"
 #include "Utilities/carray.h"
 

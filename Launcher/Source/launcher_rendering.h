@@ -6,51 +6,56 @@
 
 #include "Drawing/drawing.h"
 
-enum class LauncherImages : int
+using namespace SquarePixelEngine;
+
+namespace MainLauncher
 {
-    Launcher = 0,
-    Font16,
-    Font32,
-    ButtonA,
-    ButtonB,
-    ButtonJ,
-    ButtonK,
-    ButtonUp,
-    ButtonDown,
-    ButtonMenuUp,
-    ButtonMenuDown,
-    DpadButtonArrowUp,
-    DpadButtonArrowDown,
-    DpadButtonArrowLeft,
-    DpadButtonArrowRight,
-    DpadButtonUp,
-    DpadButtonDown,
-    MAX
-};
+    enum class LauncherImages : int
+    {
+        Launcher = 0,
+        Font16,
+        Font32,
+        ButtonA,
+        ButtonB,
+        ButtonJ,
+        ButtonK,
+        ButtonUp,
+        ButtonDown,
+        ButtonMenuUp,
+        ButtonMenuDown,
+        DpadButtonArrowUp,
+        DpadButtonArrowDown,
+        DpadButtonArrowLeft,
+        DpadButtonArrowRight,
+        DpadButtonUp,
+        DpadButtonDown,
+        MAX
+    };
 
-struct LauncherRendering
-{
-    int imagesSize;
-    Image* newImages;
+    struct LauncherRendering
+    {
+        int imagesSize;
+        Image* newImages;
 
-    int spriteSize;
-    Sprite* sprites;
+        int spriteSize;
+        Sprite* sprites;
 
-    int textSize;
-    Text* texts;
+        int textSize;
+        Text* texts;
 
-    Image* introImage;
-    SpriteAnimated* introAnimation;
+        Image* introImage;
+        SpriteAnimated* introAnimation;
 
-    Image* santaCartridgeImage;
-    Sprite* santaCartridge;
+        Image* santaCartridgeImage;
+        Sprite* santaCartridge;
 
-    bool isIntro;
-};
+        bool isIntro;
+    };
 
-LauncherRendering LauncherRenderingSetup(CameraRect* screenCamera);
-void LauncherUpdateUI(InputData* inputData, LauncherRendering* launcherRendering);
-void LauncherRender(ScreenData* screenData, int screenSize, LauncherRendering* launcherRendering, float deltaTime);
-void LauncherRenderIntro(ScreenData* screenData, int screenSize, LauncherRendering* launcherRendering, float deltaTime);
+    LauncherRendering LauncherRenderingSetup(CameraRect* screenCamera);
+    void LauncherUpdateUI(InputData* inputData, LauncherRendering* launcherRendering);
+    void LauncherRender(ScreenData* screenData, int screenSize, LauncherRendering* launcherRendering, float deltaTime);
+    void LauncherRenderIntro(ScreenData* screenData, int screenSize, LauncherRendering* launcherRendering, float deltaTime);
+}
 
 #endif

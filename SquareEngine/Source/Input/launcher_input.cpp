@@ -1,100 +1,103 @@
 #include "launcher_input.h"
 
-ButtonState GetMenuButton(InputData* inputData)
+namespace SquarePixelEngine
 {
-    if(inputData->inputType == InputType::Controller)
+    ButtonState GetMenuButton(InputData* inputData)
     {
-        return inputData->controller.gamepadStates[(int)ControllerButtonCodes::START];
-    }
-    else
-    {
-        return inputData->keyboardMouse.keyStates[(int)KeyCodes::Escape];
-    }
-}
-
-ButtonState GetActionButton(InputData* inputData)
-{
-    if(inputData->inputType == InputType::Controller)
-    {
-        return inputData->controller.gamepadStates[(int)ControllerButtonCodes::A];
-    }
-    else
-    {
-        return inputData->keyboardMouse.keyStates[(int)KeyCodes::JKey];
-    }
-}
-
-ButtonState GetBackButton(InputData* inputData)
-{
-    if(inputData->inputType == InputType::Controller)
-    {
-        return inputData->controller.gamepadStates[(int)ControllerButtonCodes::B];
-    }
-    else
-    {
-        return inputData->keyboardMouse.keyStates[(int)KeyCodes::KKey];
-    }
-}
-
-ButtonState GetDirection(InputData* inputData, int directionID)
-{
-    int keyboardAxisIDs[] =
-    {
-        (int)KeyCodes::WKey,
-        (int)KeyCodes::SKey,
-        (int)KeyCodes::AKey,
-        (int)KeyCodes::DKey
-    };
-
-    int leftAxisIDs[] =
-    {
-        (int)ControllerButtonCodes::L_THUMB_UP,
-        (int)ControllerButtonCodes::L_THUMB_DOWN,
-        (int)ControllerButtonCodes::L_THUMB_LEFT,
-        (int)ControllerButtonCodes::L_THUMB_RIGHT
-    };
-
-    int dpadAxisIDs[] =
-    {
-        (int)ControllerButtonCodes::DPAD_UP,
-        (int)ControllerButtonCodes::DPAD_DOWN,
-        (int)ControllerButtonCodes::DPAD_LEFT,
-        (int)ControllerButtonCodes::DPAD_RIGHT
-    };
-
-    if(inputData->inputType == InputType::Controller)
-    {
-        if(inputData->controller.gamepadStates[dpadAxisIDs[directionID]] != ButtonState::None)
+        if(inputData->inputType == InputType::Controller)
         {
-            return inputData->controller.gamepadStates[dpadAxisIDs[directionID]];
+            return inputData->controller.gamepadStates[(int)ControllerButtonCodes::START];
         }
-
-        return inputData->controller.gamepadStates[leftAxisIDs[directionID]];
+        else
+        {
+            return inputData->keyboardMouse.keyStates[(int)KeyCodes::Escape];
+        }
     }
-    else
+
+    ButtonState GetActionButton(InputData* inputData)
     {
-        return inputData->keyboardMouse.keyStates[keyboardAxisIDs[directionID]];
+        if(inputData->inputType == InputType::Controller)
+        {
+            return inputData->controller.gamepadStates[(int)ControllerButtonCodes::A];
+        }
+        else
+        {
+            return inputData->keyboardMouse.keyStates[(int)KeyCodes::JKey];
+        }
     }
-}
 
-float GetXAxis(InputData* inputData)
-{
-    ButtonState leftDir = GetDirection(inputData, 2);
-    ButtonState rightDir = GetDirection(inputData, 3);
+    ButtonState GetBackButton(InputData* inputData)
+    {
+        if(inputData->inputType == InputType::Controller)
+        {
+            return inputData->controller.gamepadStates[(int)ControllerButtonCodes::B];
+        }
+        else
+        {
+            return inputData->keyboardMouse.keyStates[(int)KeyCodes::KKey];
+        }
+    }
 
-    float xLeft = (leftDir == ButtonState::Down || leftDir == ButtonState::Held) ? -1.0f : 0.0f;
-    float xRight = (rightDir == ButtonState::Down || rightDir == ButtonState::Held) ? 1.0f : 0.0f;
+    ButtonState GetDirection(InputData* inputData, int directionID)
+    {
+        int keyboardAxisIDs[] =
+        {
+            (int)KeyCodes::WKey,
+            (int)KeyCodes::SKey,
+            (int)KeyCodes::AKey,
+            (int)KeyCodes::DKey
+        };
 
-    return xLeft + xRight;
-}
+        int leftAxisIDs[] =
+        {
+            (int)ControllerButtonCodes::L_THUMB_UP,
+            (int)ControllerButtonCodes::L_THUMB_DOWN,
+            (int)ControllerButtonCodes::L_THUMB_LEFT,
+            (int)ControllerButtonCodes::L_THUMB_RIGHT
+        };
 
-float GetYAxis(InputData* inputData)
-{
-    ButtonState upDir = GetDirection(inputData, 0);
-    ButtonState downDir = GetDirection(inputData, 1);
+        int dpadAxisIDs[] =
+        {
+            (int)ControllerButtonCodes::DPAD_UP,
+            (int)ControllerButtonCodes::DPAD_DOWN,
+            (int)ControllerButtonCodes::DPAD_LEFT,
+            (int)ControllerButtonCodes::DPAD_RIGHT
+        };
 
-    float yUp = (upDir == ButtonState::Down || upDir == ButtonState::Held) ? 1.0f : 0.0f;
-    float yDown = (downDir == ButtonState::Down || downDir == ButtonState::Held) ? -1.0f : 0.0f;
+        if(inputData->inputType == InputType::Controller)
+        {
+            if(inputData->controller.gamepadStates[dpadAxisIDs[directionID]] != ButtonState::None)
+            {
+                return inputData->controller.gamepadStates[dpadAxisIDs[directionID]];
+            }
 
-    return yUp + yDown;
+            return inputData->controller.gamepadStates[leftAxisIDs[directionID]];
+        }
+        else
+        {
+            return inputData->keyboardMouse.keyStates[keyboardAxisIDs[directionID]];
+        }
+    }
+
+    float GetXAxis(InputData* inputData)
+    {
+        ButtonState leftDir = GetDirection(inputData, 2);
+        ButtonState rightDir = GetDirection(inputData, 3);
+
+        float xLeft = (leftDir == ButtonState::Down || leftDir == ButtonState::Held) ? -1.0f : 0.0f;
+        float xRight = (rightDir == ButtonState::Down || rightDir == ButtonState::Held) ? 1.0f : 0.0f;
+
+        return xLeft + xRight;
+    }
+
+    float GetYAxis(InputData* inputData)
+    {
+        ButtonState upDir = GetDirection(inputData, 0);
+        ButtonState downDir = GetDirection(inputData, 1);
+
+        float yUp = (upDir == ButtonState::Down || upDir == ButtonState::Held) ? 1.0f : 0.0f;
+        float yDown = (downDir == ButtonState::Down || downDir == ButtonState::Held) ? -1.0f : 0.0f;
+
+        return yUp + yDown;
+    }
 }

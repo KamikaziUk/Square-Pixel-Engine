@@ -5,24 +5,27 @@
 #include "Input/keyboard_mouse.h"
 #include "Input/controller.h"
 
-enum class InputType
+namespace SquarePixelEngine
 {
-    KeyboardMouse = 0,
-    Controller = 1
-};
-
-struct InputData
-{
-    InputData()
+    enum class InputType
     {
-        controller = XInputController::SetupController(0);
-        keyboardMouse = KeyboardMouse::Setup();
-        inputType = InputType::KeyboardMouse;
-    }
+        KeyboardMouse = 0,
+        Controller = 1
+    };
 
-    InputType inputType;
-    XInputController controller;
-    KeyboardMouse keyboardMouse;
-};
+    struct InputData
+    {
+        InputData()
+        {
+            controller = XInputController::SetupController(0);
+            keyboardMouse = KeyboardMouse::Setup();
+            inputType = InputType::KeyboardMouse;
+        }
+
+        InputType inputType;
+        XInputController controller;
+        KeyboardMouse keyboardMouse;
+    };
+}
 
 #endif
