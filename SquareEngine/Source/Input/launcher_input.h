@@ -6,11 +6,11 @@
 
 namespace SquarePixelEngine
 {
-	ButtonState GetMenuButton(InputData* inputData);
-	ButtonState GetActionButton(InputData* inputData);
-	ButtonState GetBackButton(InputData* inputData);
-	float GetXAxis(InputData* inputData);
-	float GetYAxis(InputData* inputData);
+	ButtonState GetMenuButton(const InputData* inputData);
+	ButtonState GetActionButton(const InputData* inputData);
+	ButtonState GetBackButton(const InputData* inputData);
+	float GetXAxis(const InputData* inputData);
+	float GetYAxis(const InputData* inputData);
 }
 
 #endif

@@ -3,7 +3,7 @@
 
 namespace SquarePixelEngine
 {
-    void DebugCameraMovement(InputData* inputData, WindowData* windowData)
+    void DebugCameraMovement(const InputData* inputData, WindowData* windowData)
     {
         const float moveSpeed = 0.1f;
 

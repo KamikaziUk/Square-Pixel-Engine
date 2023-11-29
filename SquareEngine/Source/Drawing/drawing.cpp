@@ -192,7 +192,7 @@ namespace SquarePixelEngine
     }
 
     // Check if image is in front of depth sorting
-    bool SortOrder(ScreenData* screenData, int screenX, int screenY, int sortOrder)
+    bool SortOrder(const ScreenData* screenData, const int screenX, const int screenY, const int sortOrder)
     {
         int screenID = (screenY * screenData->nativeWidth) + screenX;
 
@@ -204,7 +204,7 @@ namespace SquarePixelEngine
         return false;
     }
 
-    bool OutsideRect(CameraRect* cameraRect, int screenX, int screenY)
+    bool OutsideRect(const CameraRect* cameraRect, const int screenX, const int screenY)
     {
         if((screenX < cameraRect->screenX || screenX >= cameraRect->screenX + cameraRect->width) ||
             (screenY < cameraRect->screenY || screenY >= cameraRect->screenY + cameraRect->height))
@@ -216,7 +216,8 @@ namespace SquarePixelEngine
     }
 
     // Render pixel to screen
-    bool RenderPixelToScreen(ScreenData* screenData, int pixelID, int screenSize, int sortOrder, Color tintColor)
+    bool RenderPixelToScreen(ScreenData* screenData, 
+        const int pixelID, const int screenSize, const int sortOrder, const Color tintColor)
     {
         if(pixelID > 0 && pixelID < screenSize)
         {
@@ -233,8 +234,9 @@ namespace SquarePixelEngine
     }
 
     // Render pixel from image to screen
-    bool RenderImagePixelToScreen(ScreenData* screenData, int pixelID, int screenSize,
-        Color* imageData, int spriteArrayID, int sortOrder, Color tintColor)
+    bool RenderImagePixelToScreen(ScreenData* screenData, 
+        const int pixelID, const int screenSize,
+        const Color* imageData, const int spriteArrayID, const int sortOrder, const Color tintColor)
     {
         if(pixelID > 0 && pixelID < screenSize)
         {
@@ -255,7 +257,8 @@ namespace SquarePixelEngine
         return true;
     }
 
-    void RenderBox(ScreenData* screenData, CameraRect* cameraRect, float xIn, float yIn, float w, float h, int screenSize)
+    void RenderBox(ScreenData* screenData, 
+        const CameraRect* cameraRect, const float xIn, const float yIn, const float w, const float h, const int screenSize)
     {
         int cameraOffsetX = cameraRect->screenX;
         int cameraOffsetY = cameraRect->screenY;
@@ -293,7 +296,8 @@ namespace SquarePixelEngine
     }
 
     // Scrolling sprite such as a background that repeats
-    void RenderScrollSprite(ScreenData* screenData, Sprite sprite, int screenSize, int scrollOffset)
+    void RenderScrollSprite(ScreenData* screenData, 
+        const Sprite sprite, const int screenSize, const int scrollOffset)
     {
         Image* image = sprite.image;
 
@@ -344,7 +348,8 @@ namespace SquarePixelEngine
     }
 
     // Single sprite (non-animated)
-    void RenderSprite(ScreenData* screenData, Sprite sprite, int screenSize)
+    void RenderSprite(ScreenData* screenData, 
+        const Sprite sprite, const int screenSize)
     {
         Image* image = sprite.image;
 
@@ -384,7 +389,8 @@ namespace SquarePixelEngine
     }
 
     // Sprite sheet animation
-    void RenderSpriteAnimated(ScreenData* screenData, SpriteAnimated spriteAnim, int screenSize)
+    void RenderSpriteAnimated(ScreenData* screenData, 
+        const SpriteAnimated spriteAnim, const int screenSize)
     {
         Image* image = spriteAnim.image;
 
@@ -436,7 +442,8 @@ namespace SquarePixelEngine
     }
 
     // Render text from font image
-    void RenderText(ScreenData* screenData, Text text, int screenSize)
+    void RenderText(ScreenData* screenData, 
+        const Text text, const int screenSize)
     {
         Image* image = text.image;
 
@@ -513,7 +520,7 @@ namespace SquarePixelEngine
     }
 
     // Update timers for sprite animated's
-    void UpdateSpriteAnimated(SpriteAnimated* spriteAnim, float dt)
+    void UpdateSpriteAnimated(SpriteAnimated* spriteAnim, const float dt)
     {
         if(spriteAnim->animations[spriteAnim->currentAnimationID].isLoop)
         {

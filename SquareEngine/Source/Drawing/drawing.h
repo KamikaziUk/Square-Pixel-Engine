@@ -207,16 +207,18 @@ namespace SquarePixelEngine
     Image LoadImageFromFile(const char* fileName);
     void DestroyImageFromFile(Image* image);
 
-    void RenderText(ScreenData* screenData, Text text, int screenSize);
-    void RenderSpriteAnimated(ScreenData* screenData, SpriteAnimated spriteAnim, int screenSize);
-    void RenderSprite(ScreenData* screenData, Sprite sprite, int screenSize);
-    void RenderBox(ScreenData* screenData, CameraRect* cameraRect, float xIn, float yIn, float w, float h, int screenSize);
-    void RenderScrollSprite(ScreenData* screenData, Sprite sprite, int screenSize, int scrollOffset);
+    void RenderText(ScreenData* screenData, const Text text, const int screenSize);
+    void RenderSpriteAnimated(ScreenData* screenData, const SpriteAnimated spriteAnim, const int screenSize);
+    void RenderSprite(ScreenData* screenData, const Sprite sprite, const int screenSize);
+    void RenderBox(ScreenData* screenData, const CameraRect* cameraRect, 
+        const float xIn, const float yIn, const float w, const float h, const int screenSize);
+    void RenderScrollSprite(ScreenData* screenData, 
+        const Sprite sprite, const int screenSize, const int scrollOffset);
 
-    bool OutsideRect(CameraRect* cameraRect, int screenX, int screenY);
-    bool RenderPixelToScreen(ScreenData* screenData, int pixelID, int screenSize, int sortOrder, Color tintColor);
+    bool OutsideRect(const CameraRect* cameraRect, const int screenX, const int screenY);
+    bool RenderPixelToScreen(ScreenData* screenData, const int pixelID, const int screenSize, const int sortOrder, const Color tintColor);
 
-    void UpdateSpriteAnimated(SpriteAnimated* spriteAnim, float dt);
+    void UpdateSpriteAnimated(SpriteAnimated* spriteAnim, const float dt);
 
     void LoadAnimation(SpriteAnimated* animSprite, const char* fileName);
 }

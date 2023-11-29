@@ -2,7 +2,7 @@
 
 namespace SquarePixelEngine
 {
-    ButtonState GetMenuButton(InputData* inputData)
+    ButtonState GetMenuButton(const InputData* inputData)
     {
         if(inputData->inputType == InputType::Controller)
         {
@@ -14,7 +14,7 @@ namespace SquarePixelEngine
         }
     }
 
-    ButtonState GetActionButton(InputData* inputData)
+    ButtonState GetActionButton(const InputData* inputData)
     {
         if(inputData->inputType == InputType::Controller)
         {
@@ -26,7 +26,7 @@ namespace SquarePixelEngine
         }
     }
 
-    ButtonState GetBackButton(InputData* inputData)
+    ButtonState GetBackButton(const InputData* inputData)
     {
         if(inputData->inputType == InputType::Controller)
         {
@@ -38,7 +38,7 @@ namespace SquarePixelEngine
         }
     }
 
-    ButtonState GetDirection(InputData* inputData, int directionID)
+    ButtonState GetDirection(const InputData* inputData, const int directionID)
     {
         int keyboardAxisIDs[] =
         {
@@ -79,7 +79,7 @@ namespace SquarePixelEngine
         }
     }
 
-    float GetXAxis(InputData* inputData)
+    float GetXAxis(const InputData* inputData)
     {
         ButtonState leftDir = GetDirection(inputData, 2);
         ButtonState rightDir = GetDirection(inputData, 3);
@@ -90,7 +90,7 @@ namespace SquarePixelEngine
         return xLeft + xRight;
     }
 
-    float GetYAxis(InputData* inputData)
+    float GetYAxis(const InputData* inputData)
     {
         ButtonState upDir = GetDirection(inputData, 0);
         ButtonState downDir = GetDirection(inputData, 1);

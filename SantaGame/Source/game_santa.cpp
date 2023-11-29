@@ -10,7 +10,7 @@ namespace SantaGame
 {
 	GameData* game;
 
-	void CuteLoadSound(SoundData* inputData, const char* soundPath, cs_playing_sound_t* playSound, cs_loaded_sound_t* loadSound)
+	void CuteLoadSound(const SoundData* inputData, const char* soundPath, cs_playing_sound_t* playSound, cs_loaded_sound_t* loadSound)
 	{
 		if(inputData->ctx != nullptr)
 		{
@@ -19,7 +19,7 @@ namespace SantaGame
 		}
 	}
 
-	void CutePlaySound(SoundData* soundData, cs_playing_sound_t* sound, bool loop)
+	void CutePlaySound(const SoundData* soundData, cs_playing_sound_t* sound, bool loop)
 	{
 		if(soundData->ctx != nullptr)
 		{
@@ -28,7 +28,7 @@ namespace SantaGame
 		}
 	}
 
-	void CuteReleaseSound(SoundData* soundData, cs_loaded_sound_t* sound)
+	void CuteReleaseSound(const SoundData* soundData, cs_loaded_sound_t* sound)
 	{
 		if(soundData->ctx != nullptr)
 		{
@@ -367,7 +367,7 @@ namespace SantaGame
 	}
 
 	// Update final UI & play sound when game over
-	void GameOver(SoundData* soundData, GameData* game, CameraRect* mainCamera)
+	void GameOver(const SoundData* soundData, GameData* game)
 	{
 		game->gameState = GameData::GameState::End;
 
@@ -388,7 +388,7 @@ namespace SantaGame
 	}
 
 	// Spawn present that falls
-	void DropPresent(SoundData* soundData, GameData* game, CameraRect* mainCamera)
+	void DropPresent(const SoundData* soundData, GameData* game, CameraRect* mainCamera)
 	{
 		for(int i = 0; i < ARRAY_COUNT(game->presents); i++)
 		{
@@ -551,7 +551,7 @@ namespace SantaGame
 
 						if(game->lives <= 0)
 						{
-							GameOver(soundData, game, mainCamera);
+							GameOver(soundData, game);
 						}
 					}
 				}
