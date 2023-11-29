@@ -80,8 +80,12 @@ namespace SquarePixelEngine
 
     struct Text
     {
-        Text() { x = 0; y = 0; image = 0; cameraRect = 0; kerningLeading = 0; kerning = 0; stringLength = 0; stringArray = 0; characterSize = 0; mainColor = {}; sortOrder = 0; }
-        Text(int inX, int inY, int inKerning, int inKerningLeading, int inStringLength, char* inStringArray, int inCharacterSize, int inSortOrder, Color inMainColor, Image* inImage, CameraRect* inCamera)
+        Text() { x = 0; y = 0; image = 0; cameraRect = 0; kerningLeading = 0; kerning = 0; 
+                 stringLength = 0; stringArray = 0; characterSize = 0; mainColor = {}; sortOrder = 0; }
+        
+        Text(int inX, int inY, int inKerning, int inKerningLeading,
+            int inStringLength, char* inStringArray, int inCharacterSize, 
+            int inSortOrder, Color inMainColor, Image* inImage, CameraRect* inCamera)
         {
             x = inX;
             y = inY;
@@ -205,7 +209,6 @@ namespace SquarePixelEngine
 
     void RenderText(ScreenData* screenData, Text text, int screenSize);
     void RenderSpriteAnimated(ScreenData* screenData, SpriteAnimated spriteAnim, int screenSize);
-    void RenderSpriteFrameSheet(ScreenData* screenData, SpriteInSheet sprite, int screenSize);
     void RenderSprite(ScreenData* screenData, Sprite sprite, int screenSize);
     void RenderBox(ScreenData* screenData, CameraRect* cameraRect, float xIn, float yIn, float w, float h, int screenSize);
     void RenderScrollSprite(ScreenData* screenData, Sprite sprite, int screenSize, int scrollOffset);

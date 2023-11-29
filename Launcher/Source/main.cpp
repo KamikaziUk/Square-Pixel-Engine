@@ -131,7 +131,8 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLin
     RegisterClassW(&wc);
     windowData.window = CreateWindowW(wc.lpszClassName, L"Square Engine by MGGames",
         WS_OVERLAPPEDWINDOW | WS_VISIBLE,
-        (width / 2) - (actualScreenWidth / 2), (height / 2) - (actualScreenHeight / 2), actualScreenWidth, actualScreenHeight, NULL, NULL, hInstance, NULL);
+        (width / 2) - (actualScreenWidth / 2), (height / 2) - (actualScreenHeight / 2), 
+        actualScreenWidth, actualScreenHeight, NULL, NULL, hInstance, NULL);
 
     // Get size of window for rendering
     RECT rect;
@@ -150,7 +151,8 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLin
     windowData.isRunning = true;
 
     // Setup rendering settings
-    windowData.screenData.sortDepthBuffer = new int[windowData.screenData.nativeWidth * windowData.screenData.nativeHeight];
+    windowData.screenData.sortDepthBuffer = 
+        new int[windowData.screenData.nativeWidth * windowData.screenData.nativeHeight];
     windowData.screenData.bitmap_info.bmiHeader.biSize = sizeof(windowData.screenData.bitmap_info.bmiHeader);
     windowData.screenData.bitmap_info.bmiHeader.biWidth = windowData.screenData.nativeWidth;
     windowData.screenData.bitmap_info.bmiHeader.biHeight = windowData.screenData.nativeHeight;
@@ -162,8 +164,10 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLin
     // Cameras
     windowData.camerasSize = 2;
     windowData.cameras = new CameraRect[windowData.camerasSize];
-    windowData.cameras[CameraTypes::Launcher] = CameraRect(0, 0, windowData.screenData.nativeWidth, windowData.screenData.nativeHeight, false);
-    windowData.cameras[CameraTypes::Gameplay] = CameraRect(32, 32, 160, 144, true);
+    windowData.cameras[CameraTypes::Launcher] = 
+        CameraRect(0, 0, windowData.screenData.nativeWidth, windowData.screenData.nativeHeight, false);
+    windowData.cameras[CameraTypes::Gameplay] = 
+        CameraRect(32, 32, 160, 144, true);
 
     launcherData.rendering = LauncherRenderingSetup(&windowData.cameras[CameraTypes::Launcher]);
 

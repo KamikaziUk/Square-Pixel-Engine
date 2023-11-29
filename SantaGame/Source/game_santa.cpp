@@ -98,15 +98,20 @@ namespace SantaGame
 
 		building->chimneyParticle.x = building->chimney.x;
 		building->chimneyParticle.y = building->chimney.y + 16;
-		building->chimneyParticle.currentTime = building->chimneyParticle.animations[building->chimneyParticle.currentAnimationID].animationTime;
+		building->chimneyParticle.currentTime = 
+			building->chimneyParticle.animations[building->chimneyParticle.currentAnimationID].animationTime;
 
 		building->lifeParticle.x = building->chimney.x;
 		building->lifeParticle.y = building->chimney.y + 16;
-		building->lifeParticle.currentTime = building->lifeParticle.animations[building->lifeParticle.currentAnimationID].animationTime * ((float)RandomMinMax(0, 100) / 100.0f);
+		building->lifeParticle.currentTime = 
+			building->lifeParticle.animations[
+				building->lifeParticle.currentAnimationID].animationTime * ((float)RandomMinMax(0, 100) / 100.0f);
 
 		building->naughtySign.x = building->chimney.x;
 		building->naughtySign.y = building->chimney.y;
-		building->naughtySign.currentTime = building->naughtySign.animations[building->naughtySign.currentAnimationID].animationTime * ((float)RandomMinMax(0, 100) / 100.0f);
+		building->naughtySign.currentTime = 
+			building->naughtySign.animations[
+				building->naughtySign.currentAnimationID].animationTime * ((float)RandomMinMax(0, 100) / 100.0f);
 
 		building->lifeAABB = AABB(building->chimney.x, building->chimney.y + 16, 16, 16);
 		building->chimneyAABB = AABB(building->chimney.x, building->chimney.y, 16, 16);
@@ -154,7 +159,9 @@ namespace SantaGame
 			}
 		}
 
-		building->foreground = Sprite(game->nextBuildingXOffset + ((float)(building->widthSize) * 16.0f), 0, 1, &game->buildingImages.foregroundImages[RandomMinMax(0, 2)], mainCamera);
+		building->foreground = 
+			Sprite(game->nextBuildingXOffset + ((float)(building->widthSize) * 16.0f), 0, 1, 
+				   &game->buildingImages.foregroundImages[RandomMinMax(0, 2)], mainCamera);
 
 		building->blocksSize = building->widthSize * building->heightSize;
 
@@ -185,14 +192,20 @@ namespace SantaGame
 
 				if(buildingType)
 				{
-					building->buildingBlocks[arrayID] = Sprite(game->nextBuildingXOffset + ((float)x * 16.0f), ((float)y * 16.0f), 1, &game->buildingImages.buildingBlockImage[RandomMinMax(0, 1)], mainCamera);
+					building->buildingBlocks[arrayID] = 
+						Sprite(game->nextBuildingXOffset + ((float)x * 16.0f), ((float)y * 16.0f), 1, 
+							&game->buildingImages.buildingBlockImage[RandomMinMax(0, 1)], mainCamera);
 				}
 				else
 				{
-					building->buildingBlocks[arrayID] = Sprite(game->nextBuildingXOffset + ((float)x * 16.0f), ((float)y * 16.0f), 1, &game->buildingImages.buildingBlockImage[RandomMinMax(2, 3)], mainCamera);
+					building->buildingBlocks[arrayID] = 
+						Sprite(game->nextBuildingXOffset + ((float)x * 16.0f), ((float)y * 16.0f), 1, 
+							&game->buildingImages.buildingBlockImage[RandomMinMax(2, 3)], mainCamera);
 				}
 
-				building->windows[arrayID] = Sprite(game->nextBuildingXOffset + ((float)x * 16.0f), ((float)y * 16.0f), 1, &game->buildingImages.windowImages[windowId], mainCamera);
+				building->windows[arrayID] = 
+					Sprite(game->nextBuildingXOffset + ((float)x * 16.0f), ((float)y * 16.0f), 1, 
+						&game->buildingImages.windowImages[windowId], mainCamera);
 			}
 		}
 
@@ -223,7 +236,8 @@ namespace SantaGame
 		// Load sprite data
 		for(int i = 0; i < ARRAY_COUNT(game->liveSprites); i++)
 		{
-			game->liveSprites[i] = Sprite(160 - (((float)(i + 1) * 10) + 8), 144 - 16, 0, &game->lifeImage, mainCamera);
+			game->liveSprites[i] = 
+				Sprite(160 - (((float)(i + 1) * 10) + 8), 144 - 16, 0, &game->lifeImage, mainCamera);
 		}
 
 		game->sky = Sprite(0, 0, 0, &game->skyImage, mainCamera);
@@ -283,13 +297,16 @@ namespace SantaGame
 		// Load building props
 		for(int i = 0; i < ARRAY_COUNT(game->buildings); i++)
 		{
-			game->buildings[i].chimneyParticle = SpriteAnimated(0, 0, 16, 16, 2, &game->buildingImages.chimneyParticleImage, mainCamera);
+			game->buildings[i].chimneyParticle = 
+				SpriteAnimated(0, 0, 16, 16, 2, &game->buildingImages.chimneyParticleImage, mainCamera);
 			LoadAnimation(&game->buildings[i].chimneyParticle, "../SantaGame/Assets/AnimFiles/ChimneyParticle.anim");
 
-			game->buildings[i].lifeParticle = SpriteAnimated(0, 0, 16, 16, 3, &game->buildingImages.lifeParticleImage, mainCamera);
+			game->buildings[i].lifeParticle = 
+				SpriteAnimated(0, 0, 16, 16, 3, &game->buildingImages.lifeParticleImage, mainCamera);
 			LoadAnimation(&game->buildings[i].lifeParticle, "../SantaGame/Assets/AnimFiles/LifePickup.anim");
 
-			game->buildings[i].naughtySign = SpriteAnimated(0, 0, 32, 16, 3, &game->buildingImages.naughtySignImage, mainCamera);
+			game->buildings[i].naughtySign = 
+				SpriteAnimated(0, 0, 32, 16, 3, &game->buildingImages.naughtySignImage, mainCamera);
 			LoadAnimation(&game->buildings[i].naughtySign, "../SantaGame/Assets/AnimFiles/NaughtySign.anim");
 
 			GenerateBuilding(game, mainCamera);
@@ -637,7 +654,9 @@ namespace SantaGame
 			{
 				if(game->missParticle[i].active)
 				{
-					if(game->missParticle[i].chimneyParticle.currentTime >= game->missParticle[i].chimneyParticle.animations[game->missParticle[i].chimneyParticle.currentAnimationID].animationTime)
+					if(game->missParticle[i].chimneyParticle.currentTime >= 
+						game->missParticle[i].chimneyParticle.animations[
+							game->missParticle[i].chimneyParticle.currentAnimationID].animationTime)
 					{
 						game->missParticle[i].active = false;
 					}

@@ -34,36 +34,51 @@ namespace MainLauncher
         // Sprites
         launcherRendering.spriteSize = 14;
         launcherRendering.sprites = new Sprite[launcherRendering.spriteSize];
-        launcherRendering.sprites[0] = Sprite(0, 0, 0, &launcherRendering.newImages[(int)LauncherImages::Launcher], screenCamera);
+        launcherRendering.sprites[0] = 
+            Sprite(0, 0, 0, &launcherRendering.newImages[(int)LauncherImages::Launcher], screenCamera);
 
         // A/B buttons
-        launcherRendering.sprites[1] = Sprite(134, 204, 0, &launcherRendering.newImages[(int)LauncherImages::ButtonUp], screenCamera);
-        launcherRendering.sprites[2] = Sprite(134, 206, 1, &launcherRendering.newImages[(int)LauncherImages::ButtonJ], screenCamera);
-        launcherRendering.sprites[3] = Sprite(161, 182, 0, &launcherRendering.newImages[(int)LauncherImages::ButtonUp], screenCamera);
-        launcherRendering.sprites[4] = Sprite(161, 184, 1, &launcherRendering.newImages[(int)LauncherImages::ButtonK], screenCamera);
+        launcherRendering.sprites[1] = 
+            Sprite(134, 204, 0, &launcherRendering.newImages[(int)LauncherImages::ButtonUp], screenCamera);
+        launcherRendering.sprites[2] = 
+            Sprite(134, 206, 1, &launcherRendering.newImages[(int)LauncherImages::ButtonJ], screenCamera);
+        launcherRendering.sprites[3] =
+            Sprite(161, 182, 0, &launcherRendering.newImages[(int)LauncherImages::ButtonUp], screenCamera);
+        launcherRendering.sprites[4] = 
+            Sprite(161, 184, 1, &launcherRendering.newImages[(int)LauncherImages::ButtonK], screenCamera);
 
         // Dpad
-        launcherRendering.sprites[5] = Sprite(55, 182, 0, &launcherRendering.newImages[(int)LauncherImages::DpadButtonUp], screenCamera);
-        launcherRendering.sprites[6] = Sprite(55, 182, 1, &launcherRendering.newImages[(int)LauncherImages::DpadButtonArrowUp], screenCamera);
+        launcherRendering.sprites[5] = 
+            Sprite(55, 182, 0, &launcherRendering.newImages[(int)LauncherImages::DpadButtonUp], screenCamera);
+        launcherRendering.sprites[6] =
+            Sprite(55, 182, 1, &launcherRendering.newImages[(int)LauncherImages::DpadButtonArrowUp], screenCamera);
 
-        launcherRendering.sprites[7] = Sprite(55, 214, 0, &launcherRendering.newImages[(int)LauncherImages::DpadButtonUp], screenCamera);
-        launcherRendering.sprites[8] = Sprite(55, 214, 1, &launcherRendering.newImages[(int)LauncherImages::DpadButtonArrowDown], screenCamera);
+        launcherRendering.sprites[7] = 
+            Sprite(55, 214, 0, &launcherRendering.newImages[(int)LauncherImages::DpadButtonUp], screenCamera);
+        launcherRendering.sprites[8] = 
+            Sprite(55, 214, 1, &launcherRendering.newImages[(int)LauncherImages::DpadButtonArrowDown], screenCamera);
 
-        launcherRendering.sprites[9] = Sprite(30, 198, 0, &launcherRendering.newImages[(int)LauncherImages::DpadButtonUp], screenCamera);
-        launcherRendering.sprites[10] = Sprite(30, 198, 1, &launcherRendering.newImages[(int)LauncherImages::DpadButtonArrowLeft], screenCamera);
+        launcherRendering.sprites[9] = 
+            Sprite(30, 198, 0, &launcherRendering.newImages[(int)LauncherImages::DpadButtonUp], screenCamera);
+        launcherRendering.sprites[10] = 
+            Sprite(30, 198, 1, &launcherRendering.newImages[(int)LauncherImages::DpadButtonArrowLeft], screenCamera);
 
-        launcherRendering.sprites[11] = Sprite(30 + 32 + 18, 198, 0, &launcherRendering.newImages[(int)LauncherImages::DpadButtonUp], screenCamera);
-        launcherRendering.sprites[12] = Sprite(30 + 32 + 18, 198, 1, &launcherRendering.newImages[(int)LauncherImages::DpadButtonArrowRight], screenCamera);
+        launcherRendering.sprites[11] = 
+            Sprite(30 + 32 + 18, 198, 0, &launcherRendering.newImages[(int)LauncherImages::DpadButtonUp], screenCamera);
+        launcherRendering.sprites[12] = 
+            Sprite(30 + 32 + 18, 198, 1, &launcherRendering.newImages[(int)LauncherImages::DpadButtonArrowRight], screenCamera);
 
         // Menu button
-        launcherRendering.sprites[13] = Sprite(125, 7, 0, &launcherRendering.newImages[(int)LauncherImages::ButtonMenuUp], screenCamera);
+        launcherRendering.sprites[13] = 
+            Sprite(125, 7, 0, &launcherRendering.newImages[(int)LauncherImages::ButtonMenuUp], screenCamera);
 
         // Intro
         launcherRendering.introImage = new Image();
         *launcherRendering.introImage = LoadImageFromFile("Assets/Sprites/LogoStartup.png");
 
         launcherRendering.introAnimation = new SpriteAnimated();
-        *launcherRendering.introAnimation = SpriteAnimated(32, 32, 160, 144, 1, launcherRendering.introImage, screenCamera);
+        *launcherRendering.introAnimation = 
+            SpriteAnimated(32, 32, 160, 144, 1, launcherRendering.introImage, screenCamera);
         LoadAnimation(launcherRendering.introAnimation, "Assets/AnimFiles/Intro.anim");
 
         // Text
