@@ -5,7 +5,8 @@ project "Launcher"
    toolset "v142"
    targetdir "Binaries/%{cfg.buildcfg}"
    staticruntime "off"
-
+   disablewarnings { "5105", "4996" }
+   
    files { "Source/**.h", "Source/**.cpp" }
 
    includedirs

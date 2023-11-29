@@ -1,3 +1,4 @@
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #pragma comment(lib, "winmm.lib")
 
@@ -174,8 +175,8 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLin
     printf("emulator render setup \n");
 
     // Setup time
-    srand(time(NULL));
-    windowData.startTime = clock();
+    srand((unsigned int)time(NULL));
+    windowData.startTime = (float)clock();
 
     // Setup audio
     soundData.ctx = cs_make_context(windowData.window, 44100, 8192, 0, NULL);
@@ -184,8 +185,8 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLin
 
     while(windowData.isRunning)
     {
-        windowData.deltaTime = (clock() - windowData.currentTicks) / 1000.0f;
-        windowData.currentTicks = clock();
+        windowData.deltaTime = ((float)clock() - windowData.currentTicks) / 1000.0f;
+        windowData.currentTicks = (float)clock();
 
         // Input updates
         {

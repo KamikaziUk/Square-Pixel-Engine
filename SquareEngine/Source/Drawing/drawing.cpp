@@ -55,7 +55,8 @@ namespace SquarePixelEngine
     void LoadAnimation(SpriteAnimated* animSprite, const char* fileName)
     {
         char readLine[512];
-        FILE* fp = fopen(fileName, "r");
+        FILE* fp = nullptr;
+        fopen_s(&fp, fileName, "r");
 
         if(fp == NULL)
         {
@@ -247,9 +248,9 @@ namespace SquarePixelEngine
             }
 
             const Color pixelColor = Color(
-                imageData[spriteArrayID].r * ((float)tintColor.r / 255.0f),
-                imageData[spriteArrayID].g * ((float)tintColor.g / 255.0f),
-                imageData[spriteArrayID].b * ((float)tintColor.b / 255.0f));
+                (int)ceil((float)imageData[spriteArrayID].r * ((float)tintColor.r / 255.0f)),
+                (int)ceil((float)imageData[spriteArrayID].g * ((float)tintColor.g / 255.0f)),
+                (int)ceil((float)imageData[spriteArrayID].b * ((float)tintColor.b / 255.0f)));
 
             RenderPixelToScreen(screenData, pixelID, screenSize, sortOrder, pixelColor);
         }

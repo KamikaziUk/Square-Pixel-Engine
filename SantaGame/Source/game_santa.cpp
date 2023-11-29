@@ -254,19 +254,19 @@ namespace SantaGame
 		game->textFont = LoadImageFromFile("../SantaGame/Assets/Fonts/Font16.png");
 
 		// Load text
-		sprintf(game->scoreStr, "SCORE 0");
+		sprintf_s(game->scoreStr, "SCORE 0");
 		game->scoreText = Text(0, 144 - 16, 6, 6, 7, game->scoreStr, 16, 10, colorWhite, &game->textFont, mainCamera);
 
-		sprintf(game->comboStr, "COMBO 0");
+		sprintf_s(game->comboStr, "COMBO 0");
 		game->comboText = Text(0, 144 - 24, 6, 6, 7, game->comboStr, 16, 10, colorWhite, &game->textFont, mainCamera);
 
-		sprintf(game->playStr, "PLAY");
+		sprintf_s(game->playStr, "PLAY");
 		game->playText = Text(88, 144 - 54, 6, 6, 4, game->playStr, 16, 10, colorWhite, &game->textFont, mainCamera);
 
-		sprintf(game->titleStr, "KRINGLES");
+		sprintf_s(game->titleStr, "KRINGLES");
 		game->titleText = Text(76, 144 - 25, 6, 6, 8, game->titleStr, 16, 10, colorTitle, &game->textFont, mainCamera);
 
-		sprintf(game->titleStr2, "DELIVERY");
+		sprintf_s(game->titleStr2, "DELIVERY");
 		game->titleText2 = Text(76, 144 - 35, 6, 6, 17, game->titleStr2, 16, 10, colorTitle, &game->textFont, mainCamera);
 
 		// Load building images
@@ -323,8 +323,8 @@ namespace SantaGame
 		// Randomize snow particles
 		for(int y = 0; y < ARRAY_COUNT(game->snowParticleY); y++)
 		{
-			game->snowParticleX[y] = RandomMinMax(0, 256);
-			game->snowParticleY[y] = RandomMinMax(144, 288);
+			game->snowParticleX[y] = (float)RandomMinMax(0, 256);
+			game->snowParticleY[y] = (float)RandomMinMax(144, 288);
 		}
 
 		// Load audio data
@@ -359,10 +359,10 @@ namespace SantaGame
 
 	void UpdateHUD(GameData* game)
 	{
-		sprintf(game->scoreStr, "SCORE %d", game->score);
+		sprintf_s(game->scoreStr, "SCORE %d", game->score);
 		game->scoreText.stringLength = 6 + ((game->score / 10) + 1);
 
-		sprintf(game->comboStr, "COMBO %d", game->combo);
+		sprintf_s(game->comboStr, "COMBO %d", game->combo);
 		game->comboText.stringLength = 6 + ((game->combo / 10) + 1);
 	}
 
@@ -371,7 +371,7 @@ namespace SantaGame
 	{
 		game->gameState = GameData::GameState::End;
 
-		sprintf(game->titleStr, "LAST %d", game->score);
+		sprintf_s(game->titleStr, "LAST %d", game->score);
 		game->titleText.stringLength = 6 + ((game->score / 10) + 1);
 
 		if(game->score > game->bestScore)
@@ -379,7 +379,7 @@ namespace SantaGame
 			game->bestScore = game->score;
 		}
 
-		sprintf(game->titleStr2, "BEST %d", game->bestScore);
+		sprintf_s(game->titleStr2, "BEST %d", game->bestScore);
 		game->titleText2.stringLength = 6 + ((game->bestScore / 10) + 1);
 
 		CutePlaySound(soundData, &game->audioData.lost, false);
@@ -622,14 +622,14 @@ namespace SantaGame
 
 			// Scroll backdrop
 			game->nextBuildingXOffset -= scrollSpeed * deltaTime;
-			game->skyScrollX = fmod(game->skyScrollX - (scrollSpeed * 0.4f * deltaTime), 160);
-			game->backScrollX = fmod(game->backScrollX - (scrollSpeed * 0.5f * deltaTime), 160);
-			game->cloudScrollX = fmod(game->cloudScrollX - (scrollSpeed * 0.6f * deltaTime), 160);
+			game->skyScrollX = (float)fmod(game->skyScrollX - (scrollSpeed * 0.4f * deltaTime), 160);
+			game->backScrollX = (float)fmod(game->backScrollX - (scrollSpeed * 0.5f * deltaTime), 160);
+			game->cloudScrollX = (float)fmod(game->cloudScrollX - (scrollSpeed * 0.6f * deltaTime), 160);
 
 			if(game->santa.currentAnimationID == 1 &&
 				game->santa.currentTime >= game->santa.animations[game->santa.currentAnimationID].animationTime)
 			{
-				game->santa.currentAnimationID = 0.0f;
+				game->santa.currentAnimationID = 0;
 				game->santa.currentTime = 0.0f;
 			}
 
@@ -644,8 +644,8 @@ namespace SantaGame
 
 				if(game->snowParticleY[y] < 0.0f)
 				{
-					game->snowParticleX[y] = RandomMinMax(0, 256);
-					game->snowParticleY[y] = RandomMinMax(144, 288);
+					game->snowParticleX[y] = (float)RandomMinMax(0, 256);
+					game->snowParticleY[y] = (float)RandomMinMax(144, 288);
 				}
 			}
 
@@ -775,7 +775,7 @@ namespace SantaGame
 			{
 				auto spriteY = (mainCamera->height - (int)game->snowParticleY[y]);
 
-				int screenX = mainCamera->screenX + game->snowParticleX[y];
+				int screenX = mainCamera->screenX + (int)game->snowParticleX[y];
 				int screenY = mainCamera->screenY + spriteY;
 
 				if(OutsideRect(mainCamera, screenX, screenY))
