@@ -29,6 +29,8 @@ Rendering
 - Sprites
 - Spritesheets
 - Scrolling sprites
+
+Input
 - Keyboard & mouse input
 - Controller input (Xinput)
 
