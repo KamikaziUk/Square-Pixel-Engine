@@ -226,9 +226,9 @@ namespace SquarePixelEngine
             screenData->sortDepthBuffer[pixelID] = sortOrder;
 
             // TODO: Improve this with memcpy
-            ((char*)screenData->memory)[(pixelID * 4)] = (char)((float)tintColor.b);
-            ((char*)screenData->memory)[(pixelID * 4) + 1] = (char)((float)tintColor.g);
-            ((char*)screenData->memory)[(pixelID * 4) + 2] = (char)((float)tintColor.r);
+            ((char*)screenData->memory)[(pixelID * 4)] = (char)tintColor.b;
+            ((char*)screenData->memory)[(pixelID * 4) + 1] = (char)tintColor.g;
+            ((char*)screenData->memory)[(pixelID * 4) + 2] = (char)tintColor.r;
             ((char*)screenData->memory)[(pixelID * 4) + 3] = (char)0;
         }
 
@@ -238,7 +238,7 @@ namespace SquarePixelEngine
     // Render pixel from image to screen
     bool RenderImagePixelToScreen(ScreenData* screenData, 
         const int pixelID, const int screenSize,
-        const Color* imageData, const int spriteArrayID, const int sortOrder, const Color tintColor)
+        const Color* imageData, const int spriteArrayID, const int sortOrder, const Color* tintColor)
     {
         if(pixelID > 0 && pixelID < screenSize)
         {
@@ -248,10 +248,21 @@ namespace SquarePixelEngine
                 return false;
             }
 
-            const Color pixelColor = Color(
-                (int)ceil((float)imageData[spriteArrayID].r * ((float)tintColor.r / 255.0f)),
-                (int)ceil((float)imageData[spriteArrayID].g * ((float)tintColor.g / 255.0f)),
-                (int)ceil((float)imageData[spriteArrayID].b * ((float)tintColor.b / 255.0f)));
+            Color pixelColor;
+            pixelColor.a = 255;
+
+            if(tintColor != nullptr)
+            {
+                pixelColor.r = (int)((float)imageData[spriteArrayID].r * ((float)tintColor->r / 255.0f));
+                pixelColor.g = (int)((float)imageData[spriteArrayID].g * ((float)tintColor->g / 255.0f));
+                pixelColor.b = (int)((float)imageData[spriteArrayID].b * ((float)tintColor->b / 255.0f));
+            }
+            else
+            {
+                pixelColor.r = (int)((float)imageData[spriteArrayID].r);
+                pixelColor.g = (int)((float)imageData[spriteArrayID].g);
+                pixelColor.b = (int)((float)imageData[spriteArrayID].b);
+            }
 
             RenderPixelToScreen(screenData, pixelID, screenSize, sortOrder, pixelColor);
         }
@@ -341,7 +352,7 @@ namespace SquarePixelEngine
                 int screenID = (screenY * screenData->nativeWidth) + screenX;
                 int arrayID = (y * image->width) + x;
 
-                if(!RenderImagePixelToScreen(screenData, screenID, screenSize, image->imageData, arrayID, sprite.sortOrder, colorWhite))
+                if(!RenderImagePixelToScreen(screenData, screenID, screenSize, image->imageData, arrayID, sprite.sortOrder, nullptr))
                 {
                     continue;
                 }
@@ -382,7 +393,7 @@ namespace SquarePixelEngine
                 int screenID = (screenY * screenData->nativeWidth) + screenX;
                 int arrayID = (y * image->width) + x;
 
-                if(!RenderImagePixelToScreen(screenData, screenID, screenSize, image->imageData, arrayID, sprite.sortOrder, colorWhite))
+                if(!RenderImagePixelToScreen(screenData, screenID, screenSize, image->imageData, arrayID, sprite.sortOrder, nullptr))
                 {
                     continue;
                 }
@@ -435,7 +446,7 @@ namespace SquarePixelEngine
                 int screenID = (screenY * screenData->nativeWidth) + screenX;
                 int arrayID = ((y + yOffset) * image->width) + (x + xOffset);
 
-                if(!RenderImagePixelToScreen(screenData, screenID, screenSize, image->imageData, arrayID, spriteAnim.sortOrder, colorWhite))
+                if(!RenderImagePixelToScreen(screenData, screenID, screenSize, image->imageData, arrayID, spriteAnim.sortOrder, nullptr))
                 {
                     continue;
                 }
@@ -512,7 +523,7 @@ namespace SquarePixelEngine
                     int screenID = (screenY * screenData->nativeWidth) + screenX;
                     int arrayID = ((y + yOffset) * image->width) + (x + xOffset);
 
-                    if(!RenderImagePixelToScreen(screenData, screenID, screenSize, image->imageData, arrayID, text.sortOrder, text.mainColor))
+                    if(!RenderImagePixelToScreen(screenData, screenID, screenSize, image->imageData, arrayID, text.sortOrder, &text.mainColor))
                     {
                         continue;
                     }
