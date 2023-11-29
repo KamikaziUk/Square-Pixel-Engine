@@ -47,6 +47,19 @@ namespace SquarePixelEngine
 
     struct KeyboardMouse
     {
+        KeyboardMouse()
+        {
+            for(int i = 0; i < 256; i++)
+            {
+                keyStates[i] = {};
+            }
+
+            for(int i = 0; i < 256; i++)
+            {
+                keyPressed[i] = false;
+            }
+        }
+
         ButtonState keyStates[256];
         bool keyPressed[256];
 

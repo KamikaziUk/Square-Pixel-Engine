@@ -9,6 +9,11 @@ namespace SquarePixelEngine
 {
 	struct SoundData
 	{
+		SoundData()
+		{
+			ctx = nullptr;
+		}
+
 		cs_context_t* ctx;
 	};
 }

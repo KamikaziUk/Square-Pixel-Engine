@@ -36,6 +36,17 @@ namespace SquarePixelEngine
 
     struct XInputController
     {
+        XInputController()
+        {
+            controllerState = {};
+            controllerNum = 0;
+
+            for(int i = 0; i < (int)ControllerButtonCodes::MAX; i++)
+            {
+                gamepadStates[i] = {};
+            }
+        }
+
         XINPUT_STATE controllerState;
         int controllerNum;
         ButtonState gamepadStates[(int)ControllerButtonCodes::MAX];

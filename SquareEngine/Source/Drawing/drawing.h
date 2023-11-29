@@ -63,20 +63,42 @@ namespace SquarePixelEngine
 
     struct ScreenData
     {
-        int targetWidth = 0;
-        int targetHeight = 0;
+        ScreenData()
+        {
+            targetWidth = 0;
+            targetHeight = 0;
 
-        int nativeWidth = 0;
-        int nativeHeight = 0;
+            nativeWidth = 0;
+            nativeHeight = 0;
 
-        void* memory = nullptr;
-        int* sortDepthBuffer = nullptr;
+            memory = nullptr;
+            sortDepthBuffer = nullptr;
 
-        BITMAPINFO bitmap_info = {};
+            bitmap_info = {};
+        }
+
+        int targetWidth;
+        int targetHeight;
+
+        int nativeWidth;
+        int nativeHeight;
+
+        void* memory;
+        int* sortDepthBuffer;
+
+        BITMAPINFO bitmap_info;
     };
 
     struct Image
     {
+        Image()
+        {
+            width = 0;
+            height = 0;
+            channels = 0;
+            imageData = nullptr;
+        }
+
         int width;
         int height;
         int channels;
@@ -87,8 +109,20 @@ namespace SquarePixelEngine
 
     struct Text
     {
-        Text() { x = 0; y = 0; image = 0; cameraRect = 0; kerningLeading = 0; kerning = 0; 
-                 stringLength = 0; stringArray = 0; characterSize = 0; mainColor = {}; sortOrder = 0; }
+        Text() 
+        { 
+            x = 0; 
+            y = 0; 
+            image = 0; 
+            cameraRect = 0; 
+            kerningLeading = 0; 
+            kerning = 0; 
+            stringLength = 0; 
+            stringArray = 0; 
+            characterSize = 0;
+            mainColor = {};
+            sortOrder = 0; 
+        }
         
         Text(int inX, int inY, int inKerning, int inKerningLeading,
             int inStringLength, char* inStringArray, int inCharacterSize, 
@@ -109,7 +143,8 @@ namespace SquarePixelEngine
 
         CameraRect* cameraRect;
         Image* image;
-        int x, y;
+        int x;
+        int y;
         int kerningLeading; // Vertical spacing
         int kerning; // Space between characters
         int characterSize;
@@ -123,7 +158,15 @@ namespace SquarePixelEngine
 
     struct Sprite
     {
-        Sprite() { x = 0; y = 0; image = 0; cameraRect = 0; sortOrder = 0; }
+        Sprite() 
+        { 
+            x = 0; 
+            y = 0;
+            image = 0;
+            cameraRect = 0;
+            sortOrder = 0; 
+        }
+
         Sprite(float inX, float inY, int inSortOrder, Image* inImage, CameraRect* inCamera)
         {
             x = inX;
@@ -135,14 +178,25 @@ namespace SquarePixelEngine
 
         CameraRect* cameraRect;
         Image* image;
-        float x, y;
+        float x;
+        float y;
 
         int sortOrder;
     };
 
     struct SpriteInSheet
     {
-        SpriteInSheet() { x = 0; y = 0; tileID = 0; tileSize = 0; image = 0; cameraRect = 0; sortOrder = 0; }
+        SpriteInSheet() 
+        {
+            x = 0;
+            y = 0; 
+            tileID = 0;
+            tileSize = 0;
+            image = 0; 
+            cameraRect = 0; 
+            sortOrder = 0; 
+        }
+        
         SpriteInSheet(float inX, float inY, int inTileID, int inTileSize, int inSortOrder, Image* inImage, CameraRect* inCamera)
         {
             x = inX;
@@ -158,13 +212,21 @@ namespace SquarePixelEngine
         Image* image;
         int tileID;
         int tileSize;
-        float x, y;
-
+        float x;
+        float y;
         int sortOrder;
     };
 
     struct SpriteAnimationFrames
     {
+        SpriteAnimationFrames()
+        {
+            frameCount = 0;
+            frames = nullptr;
+            animationTime = 0;
+            isLoop = false;
+        }
+
         int frameCount;
         int* frames;
         float animationTime;
@@ -175,9 +237,16 @@ namespace SquarePixelEngine
     {
         SpriteAnimated()
         {
-            x = 0; y = 0; tileSizeX = 0; tileSizeY = 0; image = 0;
-            currentTime = 0; currentAnimationID = 0;
-            animations = 0; animationCount = 0; cameraRect = 0;
+            x = 0; 
+            y = 0; 
+            tileSizeX = 0; 
+            tileSizeY = 0; 
+            image = 0;
+            currentTime = 0;
+            currentAnimationID = 0;
+            animations = 0; 
+            animationCount = 0;
+            cameraRect = 0;
             sortOrder = 0;
         }
 
@@ -189,7 +258,6 @@ namespace SquarePixelEngine
             tileSizeY = inTileSizeY;
             image = inImage;
             cameraRect = inCamera;
-
             currentTime = 0;
             currentAnimationID = 0;
             animations = 0;
@@ -199,8 +267,10 @@ namespace SquarePixelEngine
 
         CameraRect* cameraRect;
         Image* image;
-        int tileSizeX, tileSizeY;
-        float x, y;
+        int tileSizeX;
+        int tileSizeY;
+        float x;
+        float y;
 
         int animationCount = 0;
         SpriteAnimationFrames* animations;
