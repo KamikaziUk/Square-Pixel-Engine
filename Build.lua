@@ -1,7 +1,7 @@
 -- premake5.lua
 workspace "Square Engine"
    architecture "x64"
-   configurations { "Debug", "Release", "Dist" }
+   configurations { "Debug", "Release", "Distribution" }
    startproject "Launcher"
 
    -- Workspace-wide build options for MSVC
