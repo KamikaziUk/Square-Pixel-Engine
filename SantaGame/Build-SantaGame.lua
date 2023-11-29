@@ -30,18 +30,18 @@ project "SantaGame"
        defines {}
 
    filter "configurations:Debug"
-       defines { "DEBUG" }
+       defines { "DEBUG", "GAME_EXPORTS" }
        runtime "Debug"
        symbols "On"
 
    filter "configurations:Release"
-       defines { "RELEASE" }
+       defines { "RELEASE", "GAME_EXPORTS" }
        runtime "Release"
        optimize "On"
        symbols "On"
 
-   filter "configurations:Dist"
-       defines { "DIST" }
+   filter "configurations:Distribution"
+       defines { "DISTRIBUTION", "GAME_EXPORTS" }
        runtime "Release"
        optimize "On"
        symbols "Off"
