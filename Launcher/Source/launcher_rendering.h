@@ -34,6 +34,21 @@ namespace MainLauncher
 
     struct LauncherRendering
     {
+        LauncherRendering()
+        {
+            imagesSize = 0;
+            newImages = nullptr;
+            spriteSize = 0;
+            sprites = nullptr;
+            textSize = 0;
+            texts = nullptr;
+            introImage = nullptr;
+            introAnimation = nullptr;
+            santaCartridgeImage = nullptr;
+            santaCartridge = nullptr;
+            isIntro = false;
+        }
+
         int imagesSize;
         Image* newImages;
 

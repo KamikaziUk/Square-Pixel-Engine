@@ -11,6 +11,7 @@
 #define CUTE_SOUND_IMPLEMENTATION
 #include "External/cute_sound.h"
 
+#include "Utilities/carray.h"
 #include "Utilities/aabb.h"
 
 using namespace SquarePixelEngine;
@@ -20,14 +21,63 @@ namespace SantaGame
 {
 	struct Present
 	{
-		bool active = false;
+		Present()
+		{
+			active = false;
+			sprite = {};
+			aabb = {};
+		}
 
+		bool active;
 		Sprite sprite;
 		AABB aabb;
 	};
 
 	struct BuildingImages
 	{
+		BuildingImages()
+		{
+			for(int i = 0; i < ARRAY_COUNT(roofImage1); i++)
+			{
+				roofImage1[i] = {};
+			}
+
+			for(int i = 0; i < ARRAY_COUNT(roofImage2); i++)
+			{
+				roofImage2[i] = {};
+			}
+
+			for(int i = 0; i < ARRAY_COUNT(roofImage3); i++)
+			{
+				roofImage3[i] = {};
+			}
+
+			for(int i = 0; i < ARRAY_COUNT(roofImage4); i++)
+			{
+				roofImage4[i] = {};
+			}
+
+			chimneyImage = {};
+			chimneyParticleImage = {};
+			lifeParticleImage = {};
+			naughtySignImage = {};
+
+			for(int i = 0; i < ARRAY_COUNT(buildingBlockImage); i++)
+			{
+				buildingBlockImage[i] = {};
+			}
+
+			for(int i = 0; i < ARRAY_COUNT(windowImages); i++)
+			{
+				windowImages[i] = {};
+			}
+
+			for(int i = 0; i < ARRAY_COUNT(foregroundImages); i++)
+			{
+				foregroundImages[i] = {};
+			}
+		}
+
 		Image roofImage1[1];
 		Image roofImage2[1];
 		Image roofImage3[1];
@@ -45,7 +95,44 @@ namespace SantaGame
 
 	struct Building
 	{
-		bool active = false;
+		Building()
+		{
+			active = false;
+
+			widthSize = 0;
+			heightSize = 0;
+
+			chimneyAABB = {};
+			lifeAABB = {};
+
+			roof = {};
+
+			hasChimney = false;
+			chimney = {};
+			chimneyParticle = {};
+
+			lifeParticle = {};
+			lifeActive = false;
+
+			naughtySign = {};
+			isNaughty = false;
+
+			foreground = {};
+
+			blocksSize = false;
+
+			for(int i = 0; i < ARRAY_COUNT(buildingBlocks); i++)
+			{
+				buildingBlocks[i] = {};
+			}
+
+			for(int i = 0; i < ARRAY_COUNT(windows); i++)
+			{
+				windows[i] = {};
+			}
+		}
+
+		bool active;
 
 		int widthSize;
 		int heightSize;
@@ -74,12 +161,42 @@ namespace SantaGame
 
 	struct MissParticle
 	{
+		MissParticle()
+		{
+			chimneyParticle = {};
+			active = false;
+		}
+
 		SpriteAnimated chimneyParticle;
 		bool active;
 	};
 
 	struct AudioData
 	{
+		AudioData()
+		{
+			musicData = {};
+			music = {};
+
+			buttonUIData = {};
+			buttonUI = {};
+
+			dropData = {};
+			drop = {};
+
+			hitData = {};
+			hit = {};
+
+			missedData = {};
+			missed = {};
+
+			pickupData = {};
+			pickup = {};
+
+			lostData = {};
+			lost = {};
+		}
+
 		cs_loaded_sound_t musicData;
 		cs_playing_sound_t music;
 
@@ -111,6 +228,115 @@ namespace SantaGame
 
 	struct GameData
 	{
+		GameData()
+		{
+			santaImage = {};
+			skyImage = {};
+			backdropImage = {};
+			moonImage = {};
+			lifeImage = {};
+			cloudImage = {};
+			menuImage = {};
+			missParticleImage = {};
+
+			for(int i = 0; i < ARRAY_COUNT(presentImages); i++)
+			{
+				presentImages[i] = {};
+			}
+
+			santa = {};
+			sky = {};
+			backdrop = {};
+			clouds = {};
+			menu = {};
+
+			textFont = {};
+			playText = {};
+			titleText = {};
+			titleText2 = {};
+			scoreText = {};
+			comboText = {};
+
+			for(int i = 0; i < ARRAY_COUNT(playStr); i++)
+			{
+				playStr[i] = {};
+			}
+
+			for(int i = 0; i < ARRAY_COUNT(titleStr); i++)
+			{
+				titleStr[i] = {};
+			}
+
+			for(int i = 0; i < ARRAY_COUNT(titleStr2); i++)
+			{
+				titleStr2[i] = {};
+			}
+
+			for(int i = 0; i < ARRAY_COUNT(scoreStr); i++)
+			{
+				scoreStr[i] = {};
+			}
+
+			for(int i = 0; i < ARRAY_COUNT(comboStr); i++)
+			{
+				comboStr[i] = {};
+			}
+
+			score = 0;
+			bestScore = 0;
+			combo = 0;
+			lives = 0;
+
+			for(int i = 0; i < ARRAY_COUNT(liveSprites); i++)
+			{
+				liveSprites[i] = {};
+			}
+
+			for(int i = 0; i < ARRAY_COUNT(presents); i++)
+			{
+				presents[i] = {};
+			}
+
+			for(int i = 0; i < ARRAY_COUNT(snowParticleX); i++)
+			{
+				snowParticleX[i] = {};
+			}
+
+			for(int i = 0; i < ARRAY_COUNT(snowParticleY); i++)
+			{
+				snowParticleY[i] = {};
+			}
+
+			for(int i = 0; i < ARRAY_COUNT(missParticle); i++)
+			{
+				missParticle[i] = {};
+			}
+
+			skyScrollX = 0;
+			backScrollX = 0;
+			cloudScrollX = 0;
+
+			flickerTimer = 0;
+			delayTimer = 0;
+			gameTimer = 0;
+
+			nextLife = 0;
+			nextNaughty = 0;
+			nextChimney = 0;
+
+			nextBuildingXOffset = 0.0f;
+
+			buildingImages = {};
+
+			for(int i = 0; i < ARRAY_COUNT(buildings); i++)
+			{
+				buildings[i] = {};
+			}
+
+			audioData = {};
+			gameState = GameState::Menu;
+		}
+
 		Image santaImage;
 		Image skyImage;
 		Image backdropImage;
@@ -131,22 +357,20 @@ namespace SantaGame
 		SpriteAnimated menu;
 
 		Text playText;
-		char playStr[32];
-
 		Text titleText;
-		char titleStr[32];
-
 		Text titleText2;
-		char titleStr2[32];
-
-		int score = 0;
-		int bestScore;
 		Text scoreText;
-		char scoreStr[32];
 
+		char playStr[32];
+		char titleStr[32];
+		char titleStr2[32];
+		char scoreStr[32];
+		char comboStr[32];
+
+		int score;
+		int bestScore;
 		int combo;
 		Text comboText;
-		char comboStr[32];
 
 		int lives;
 		Sprite liveSprites[3];
