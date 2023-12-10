@@ -35,11 +35,11 @@ Input
 - Controller input (Xinput)
 
 Example game 
-- Santa game where you drop presents into chimneys
+- Santa game where you drop presents into chimneys (Music by timbeek.com)
 
 ## Third party header files:
-Copyright (c) 2023 Randy Gaul https://randygaul.github.io/
-https://github.com/RandyGaul/cute_headers/blob/master/cute_sound.h
+Stb image: https://github.com/nothings/stb/blob/master/stb_image.h
+Mini audio: https://github.com/mackron/miniaudio 
 
 MIT
 https://github.com/nothings/stb
