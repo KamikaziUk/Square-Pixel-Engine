@@ -153,7 +153,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLin
 
     RegisterClassW(&wc);
     windowData.window = CreateWindowW(wc.lpszClassName, L"Square Engine by MGGames",
-        WS_OVERLAPPEDWINDOW | WS_VISIBLE,
+        WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_VISIBLE,
         (width / 2) - (actualScreenWidth / 2), (height / 2) - (actualScreenHeight / 2), 
         actualScreenWidth, actualScreenHeight, NULL, NULL, hInstance, NULL);
 
