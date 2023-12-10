@@ -26,22 +26,55 @@
 
 #include "launcher_rendering.h"
 
+using namespace SquarePixelEngine;
+
 namespace MainLauncher
 {
     enum class LauncherState
     {
         Intro,
+        GameChooser,
         GameStart,
         GameUpdate
     };
 
+    struct GameLaunchData
+    {
+        GameLaunchData()
+        {
+            dllName = nullptr;
+            cartridgeImageName = nullptr;
+        }
+
+        GameLaunchData(LPCWSTR dllName, const char* cartridgeImageName)
+        {
+            this->dllName = dllName;
+            this->cartridgeImageName = cartridgeImageName;
+        }
+
+        LPCWSTR dllName;
+        const char* cartridgeImageName;
+    };
+
     struct LauncherData
     {
+        #define LaunchPoolSize 8
+
         LauncherData()
         {
             state = LauncherState::Intro;
             rendering = {};
+            currentSelectedGame = -1;
+            currentHighlightedGame = 0;
+            memset(&gameLaunchData, 0, sizeof(GameLaunchData) * LaunchPoolSize);
+            gameLaunchDataCount = 0;
         }
+
+        int currentSelectedGame;
+        int currentHighlightedGame;
+
+        GameLaunchData gameLaunchData[LaunchPoolSize];
+        int gameLaunchDataCount;
 
         LauncherState state;
         LauncherRendering rendering;

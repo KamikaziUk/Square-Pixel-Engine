@@ -32,6 +32,8 @@ using namespace SquarePixelEngine;
 
 namespace MainLauncher
 {
+    class LauncherData;
+
     enum class LauncherImages : int
     {
         Launcher = 0,
@@ -69,6 +71,11 @@ namespace MainLauncher
             santaCartridgeImage = nullptr;
             santaCartridge = nullptr;
             isIntro = false;
+            launchGamesSize = 0;
+            launchGameSprites = nullptr;
+            launchGameImages = nullptr;
+            chooseAGameText = {};
+            chooseAGameFlickerTime = 0.0f;
         }
 
         int imagesSize;
@@ -76,6 +83,10 @@ namespace MainLauncher
 
         int spriteSize;
         Sprite* sprites;
+
+        int launchGamesSize;
+        Sprite* launchGameSprites;
+        Image* launchGameImages;
 
         int textSize;
         Text* texts;
@@ -86,13 +97,19 @@ namespace MainLauncher
         Image* santaCartridgeImage;
         Sprite* santaCartridge;
 
+        Text chooseAGameText;
+        float chooseAGameFlickerTime;
+
         bool isIntro;
     };
 
-    LauncherRendering LauncherRenderingSetup(CameraRect* screenCamera);
+    LauncherRendering LauncherRenderingSetup(CameraRect* screenCamera, LauncherData* launcherData);
     void LauncherUpdateUI(InputData* inputData, LauncherRendering* launcherRendering);
     void LauncherRender(ScreenData* screenData, int screenSize, LauncherRendering* launcherRendering, float deltaTime);
     void LauncherRenderIntro(ScreenData* screenData, int screenSize, LauncherRendering* launcherRendering, float deltaTime);
+
+    void LauncherRenderGameChooser(ScreenData* screenData, int screenSize, LauncherData* launcherData);
+    void LauncherUpdateGameChooser(InputData* inputData, LauncherData* launcherData, int gameNumber, float dt);
 }
 
 #endif

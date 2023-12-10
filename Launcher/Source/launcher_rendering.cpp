@@ -21,14 +21,18 @@
 // SOFTWARE.
 
 #include "launcher_rendering.h"
+#include "launcher_data.h"
+
+#include "Utilities/math.h"
 
 #include <string.h>
 
 namespace MainLauncher
 {
     static char textMGGames[] = "MG GAMES";
+    static char textChooseAGame[] = "CHOOSE A GAME";
 
-    LauncherRendering LauncherRenderingSetup(CameraRect* screenCamera)
+    LauncherRendering LauncherRenderingSetup(CameraRect* screenCamera, LauncherData* launcherData)
     {
         LauncherRendering launcherRendering = {};
 
@@ -53,11 +57,24 @@ namespace MainLauncher
         launcherRendering.newImages[(int)LauncherImages::DpadButtonUp] = LoadImageFromFile("Assets/Sprites/DpadButtonUp.png");
         launcherRendering.newImages[(int)LauncherImages::DpadButtonDown] = LoadImageFromFile("Assets/Sprites/DpadButtonDown.png");
 
+        launcherRendering.launchGamesSize = launcherData->gameLaunchDataCount;
+        launcherRendering.launchGameImages = new Image[launcherRendering.launchGamesSize];
+        for(int i = 0; i < launcherRendering.launchGamesSize; i++)
+        {
+            launcherRendering.launchGameImages[i] = LoadImageFromFile(launcherData->gameLaunchData[i].cartridgeImageName);
+        }
+
         // Sprites
         launcherRendering.spriteSize = 14;
         launcherRendering.sprites = new Sprite[launcherRendering.spriteSize];
         launcherRendering.sprites[0] = 
             Sprite(0, 0, 0, &launcherRendering.newImages[(int)LauncherImages::Launcher], screenCamera);
+
+        launcherRendering.launchGameSprites = new Sprite[launcherRendering.launchGamesSize];
+        for(int i = 0; i < launcherRendering.launchGamesSize; i++)
+        {
+            launcherRendering.launchGameSprites[i] = Sprite(37, 57, 0, &launcherRendering.launchGameImages[i], screenCamera);
+        }
 
         // A/B buttons
         launcherRendering.sprites[1] = 
@@ -112,6 +129,9 @@ namespace MainLauncher
         launcherRendering.texts[0] = Text(142, 233, 6, 6, (unsigned)strlen(textMGGames), textMGGames, 16, 3,
             darkGreyColor, &launcherRendering.newImages[(int)LauncherImages::Font16], screenCamera);
 
+        launcherRendering.chooseAGameText = Text(66, 36, 6, 6, (unsigned)strlen(textChooseAGame), textChooseAGame, 16, 3,
+            darkGreyColor, &launcherRendering.newImages[(int)LauncherImages::Font16], screenCamera);
+
         return launcherRendering;
     }
 
@@ -119,6 +139,51 @@ namespace MainLauncher
     {
         UpdateSpriteAnimated(launcherRendering->introAnimation, dt);
         RenderSpriteAnimated(screenData, *launcherRendering->introAnimation, screenSize);
+    }
+
+    void LauncherRenderGameChooser(ScreenData* screenData, int screenSize, LauncherData* launcherData)
+    {
+        if(launcherData->rendering.chooseAGameFlickerTime > 0.5f)
+        {
+            RenderText(screenData, launcherData->rendering.chooseAGameText, screenSize);
+        }
+
+        RenderSprite(screenData, launcherData->rendering.launchGameSprites[launcherData->currentHighlightedGame], screenSize);
+    }
+
+    void LauncherUpdateGameChooser(InputData* inputData, LauncherData* launcherData, int gameNumber, float dt)
+    {
+        // Left
+        if(inputData->keyboardMouse.keyStates[(int)KeyCodes::AKey] == ButtonState::Down ||
+            inputData->controller.gamepadStates[(int)ControllerButtonCodes::DPAD_LEFT] == ButtonState::Down ||
+            inputData->controller.gamepadStates[(int)ControllerButtonCodes::L_THUMB_LEFT] == ButtonState::Down)
+        {
+            launcherData->currentHighlightedGame -= 1;
+        }
+
+        // Right
+        if(inputData->keyboardMouse.keyStates[(int)KeyCodes::DKey] == ButtonState::Down ||
+            inputData->controller.gamepadStates[(int)ControllerButtonCodes::DPAD_RIGHT] == ButtonState::Down ||
+            inputData->controller.gamepadStates[(int)ControllerButtonCodes::L_THUMB_RIGHT] == ButtonState::Down)
+        {
+            launcherData->currentHighlightedGame += 1;
+        }
+
+        launcherData->currentHighlightedGame
+            = Utilities::Clamp(0, gameNumber-1, launcherData->currentHighlightedGame);
+
+        // Action
+        if(inputData->keyboardMouse.keyStates[(int)KeyCodes::JKey] == ButtonState::Down ||
+            inputData->controller.gamepadStates[(int)ControllerButtonCodes::A] == ButtonState::Down)
+        {
+            launcherData->currentSelectedGame = launcherData->currentHighlightedGame;
+        }
+
+        launcherData->rendering.chooseAGameFlickerTime += dt;
+        if(launcherData->rendering.chooseAGameFlickerTime > 1.0f)
+        {
+            launcherData->rendering.chooseAGameFlickerTime = 0.0f;
+        }
     }
 
     void LauncherRender(ScreenData* screenData, int screenSize, LauncherRendering* launcherRendering, float dt)

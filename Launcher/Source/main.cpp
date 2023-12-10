@@ -32,8 +32,6 @@
 #include "launcher_data.h"
 
 #include "Drawing/cameras.cpp"
-#include "Input/launcher_input.h"
-#include "launcher_rendering.h"
 
 using namespace MainLauncher;
 
@@ -72,26 +70,12 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg,
     return DefWindowProcW(hwnd, msg, wParam, lParam);
 }
 
-// Main for launcher
-int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLine, int nCmdShow)
+int LoadDLL(LPCWSTR dllName)
 {
-    printf("starting program \n");
-
-#ifdef _DEBUG
-    // Setup console
-    {
-        AllocConsole();
-        auto consoleFile0 = freopen("CONIN$", "r", stdin);
-        auto consoleFile1 = freopen("CONOUT$", "w", stdout);
-        auto consoleFile2 = freopen("CONOUT$", "w", stderr);
-    }
-#endif
-
-    // Load DLL for game
-    HINSTANCE gameDLL = LoadLibrary(L"SantaGame.dll");
+    HINSTANCE gameDLL = LoadLibrary(dllName);
     if(gameDLL == NULL)
     {
-        printf("cannot load game .dll file\n"); 
+        printf("cannot load game .dll file\n");
         system("pause");
         return 1;
     }
@@ -129,6 +113,24 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLin
             return 1;
         }
     }
+
+    return 0;
+}
+
+// Main for launcher
+int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLine, int nCmdShow)
+{
+    printf("starting program \n");
+
+#ifdef _DEBUG
+    // Setup console
+    {
+        AllocConsole();
+        auto consoleFile0 = freopen("CONIN$", "r", stdin);
+        auto consoleFile1 = freopen("CONOUT$", "w", stdout);
+        auto consoleFile2 = freopen("CONOUT$", "w", stderr);
+    }
+#endif
 
     // Win32 window settings
     WNDCLASSW wc = { 0 };
@@ -192,7 +194,13 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLin
     windowData.cameras[CameraTypes::Gameplay] = 
         CameraRect(32, 32, 160, 144, true);
 
-    launcherData.rendering = LauncherRenderingSetup(&windowData.cameras[CameraTypes::Launcher]);
+    // Setup a few games
+    launcherData.gameLaunchData[launcherData.gameLaunchDataCount++] =
+        GameLaunchData(L"SantaGame.dll", "Assets/Sprites/SantaGameCartridge.png");
+    launcherData.gameLaunchData[launcherData.gameLaunchDataCount++] =
+        GameLaunchData(L"SantaGame.dll", "Assets/Sprites/ComingSoonCartridge.png");
+
+    launcherData.rendering = LauncherRenderingSetup(&windowData.cameras[CameraTypes::Launcher], &launcherData);
 
     printf("emulator render setup \n");
 
@@ -249,6 +257,22 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLin
                 if(launcherData.rendering.introAnimation->currentTime ==
                     launcherData.rendering.introAnimation->animations[currentAnimId].animationTime)
                 {
+                    launcherData.state = LauncherState::GameChooser;
+                }
+            }
+            break;
+
+            case LauncherState::GameChooser:
+            {
+                LauncherUpdateGameChooser(&inputData, &launcherData, launcherData.gameLaunchDataCount, windowData.deltaTime);
+
+                if(launcherData.currentSelectedGame != -1)
+                {
+                    if(LoadDLL(launcherData.gameLaunchData[launcherData.currentSelectedGame].dllName))
+                    {
+                        return -1;
+                    }
+
                     launcherData.state = LauncherState::GameStart;
                 }
             }
@@ -290,6 +314,12 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLin
                 }
                 break;
 
+                case LauncherState::GameChooser:
+                {
+                    LauncherRenderGameChooser(screenData, screenSize, &launcherData);
+                }
+                break;
+
                 case LauncherState::GameUpdate:
                 {
                     gameRender(&windowData.cameras[CameraTypes::Gameplay], screenData, screenSize);
@@ -322,7 +352,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLin
     // Clean up any resources etc
     gameEnd(&soundData, &windowData.cameras[CameraTypes::Gameplay]);
 
-    ma_engine_uninit(&soundData.engine);
+    //ma_engine_uninit(&soundData.engine);
 
     for(int i = 0; i < launcherData.rendering.imagesSize; i++)
     {
@@ -331,6 +361,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLin
 
     delete[] launcherData.rendering.sprites;
     delete[] launcherData.rendering.newImages;
+    delete[] launcherData.rendering.launchGameImages;
 
     delete[]  windowData.screenData.sortDepthBuffer;
 
