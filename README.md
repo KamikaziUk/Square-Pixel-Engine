@@ -2,6 +2,8 @@
 Square engine is a small & lightweight engine that allows you to easily create 2D pixel art games. 
 The current version is 0.1 and will be updated with new features & bug fixes later.
 
+Play the game here https://mg.itch.io/kringles-delivery
+
 ![](https://github.com/KamikaziUk/Square-Pixel-Engine/blob/master/Demo.gif)
 
 ## Building
