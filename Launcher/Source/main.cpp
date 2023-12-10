@@ -201,7 +201,12 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLin
     windowData.startTime = (float)clock();
 
     // Setup audio
-    soundData.ctx = cs_make_context(windowData.window, 44100, 8192, 0, NULL);
+    soundData.result = ma_engine_init(NULL, &soundData.engine);
+    if(soundData.result != MA_SUCCESS)
+    {
+        printf("failed to load mini audio\n");
+        return -1;
+    }
 
     printf("finished window setup \n");
 
@@ -308,9 +313,6 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLin
             );
         }
 
-        // Update audio
-        cs_mix(soundData.ctx);
-
         if(windowData.deltaTime > 0)
         {
             windowData.fps = CLOCKS_PER_SEC / windowData.deltaTime;
@@ -320,7 +322,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLin
     // Clean up any resources etc
     gameEnd(&soundData, &windowData.cameras[CameraTypes::Gameplay]);
 
-    //cs_shutdown_context(soundData.ctx);
+    ma_engine_uninit(&soundData.engine);
 
     for(int i = 0; i < launcherData.rendering.imagesSize; i++)
     {

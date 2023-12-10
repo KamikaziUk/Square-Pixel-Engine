@@ -24,8 +24,8 @@
 #ifndef SOUND_DATA
 #define SOUND_DATA
 
-#define CUTE_SOUND_IMPLEMENTATION
-#include "External/cute_sound.h"
+#define MINIAUDIO_IMPLEMENTATION
+#include "External/miniaudio.h"
 
 namespace SquarePixelEngine
 {
@@ -33,10 +33,12 @@ namespace SquarePixelEngine
 	{
 		SoundData()
 		{
-			ctx = nullptr;
+			result = {};
+			engine = {};
 		}
 
-		cs_context_t* ctx;
+		ma_result result;
+		ma_engine engine;
 	};
 }
 

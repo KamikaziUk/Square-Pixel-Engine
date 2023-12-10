@@ -32,32 +32,6 @@ namespace SantaGame
 {
 	GameData* game = nullptr;
 
-	void CuteLoadSound(const SoundData* inputData, const char* soundPath, cs_playing_sound_t* playSound, cs_loaded_sound_t* loadSound)
-	{
-		if(inputData->ctx != nullptr)
-		{
-			*loadSound = cs_load_wav(soundPath);
-			*playSound = cs_make_playing_sound(loadSound);
-		}
-	}
-
-	void CutePlaySound(const SoundData* soundData, cs_playing_sound_t* sound, bool loop)
-	{
-		if(soundData->ctx != nullptr)
-		{
-			cs_insert_sound(soundData->ctx, sound);
-			cs_loop_sound(sound, loop ? 1 : 0);
-		}
-	}
-
-	void CuteReleaseSound(const SoundData* soundData, cs_loaded_sound_t* sound)
-	{
-		if(soundData->ctx != nullptr)
-		{
-			cs_free_sound(sound);
-		}
-	}
-
 	void GenerateBuilding(GameData* game, CameraRect* mainCamera)
 	{
 		int currentBuildingId = -1;
@@ -349,17 +323,7 @@ namespace SantaGame
 			game->snowParticleY[y] = (float)RandomMinMax(144, 288);
 		}
 
-		// Load audio data
-		CuteLoadSound(soundData, "../SantaGame/Assets/Sounds/Music.wav", &game->audioData.music, &game->audioData.musicData);
-		CuteLoadSound(soundData, "../SantaGame/Assets/Sounds/ButtonUI.wav", &game->audioData.buttonUI, &game->audioData.buttonUIData);
-		CuteLoadSound(soundData, "../SantaGame/Assets/Sounds/Drop.wav", &game->audioData.drop, &game->audioData.dropData);
-		CuteLoadSound(soundData, "../SantaGame/Assets/Sounds/Hit.wav", &game->audioData.hit, &game->audioData.hitData);
-		CuteLoadSound(soundData, "../SantaGame/Assets/Sounds/Missed.wav", &game->audioData.missed, &game->audioData.missedData);
-		CuteLoadSound(soundData, "../SantaGame/Assets/Sounds/Pickup.wav", &game->audioData.pickup, &game->audioData.pickupData);
-		CuteLoadSound(soundData, "../SantaGame/Assets/Sounds/Lost.wav", &game->audioData.lost, &game->audioData.lostData);
-
-		// Start music
-		CutePlaySound(soundData, &game->audioData.music, true);
+		ma_engine_play_sound(&soundData->engine, "../SantaGame/Assets/Sounds/Music.wav", NULL);
 
 		game->score = 0;
 		game->lives = ARRAY_COUNT(game->liveSprites);
@@ -371,14 +335,6 @@ namespace SantaGame
 		{
 			return;
 		}
-
-		CuteReleaseSound(soundData, &game->audioData.musicData);
-		CuteReleaseSound(soundData, &game->audioData.buttonUIData);
-		CuteReleaseSound(soundData, &game->audioData.dropData);
-		CuteReleaseSound(soundData, &game->audioData.hitData);
-		CuteReleaseSound(soundData, &game->audioData.missedData);
-		CuteReleaseSound(soundData, &game->audioData.pickupData);
-		CuteReleaseSound(soundData, &game->audioData.lostData);
 
 		delete game;
 		game = nullptr;
@@ -394,7 +350,7 @@ namespace SantaGame
 	}
 
 	// Update final UI & play sound when game over
-	void GameOver(const SoundData* soundData, GameData* game)
+	void GameOver(SoundData* soundData, GameData* game)
 	{
 		game->gameState = GameState::End;
 
@@ -409,13 +365,13 @@ namespace SantaGame
 		sprintf_s(game->titleStr2, "BEST %d", game->bestScore);
 		game->titleText2.stringLength = 6 + ((game->bestScore / 10) + 1);
 
-		CutePlaySound(soundData, &game->audioData.lost, false);
+		ma_engine_play_sound(&soundData->engine, "../SantaGame/Assets/Sounds/Lost.wav", NULL);
 
 		game->delayTimer = 0.5f;
 	}
 
 	// Spawn present that falls
-	void DropPresent(const SoundData* soundData, GameData* game, CameraRect* mainCamera)
+	void DropPresent(SoundData* soundData, GameData* game, CameraRect* mainCamera)
 	{
 		for(int i = 0; i < ARRAY_COUNT(game->presents); i++)
 		{
@@ -430,7 +386,7 @@ namespace SantaGame
 				game->santa.currentAnimationID = 1;
 				game->santa.currentTime = 0.0f;
 
-				CutePlaySound(soundData, &game->audioData.drop, false);
+				ma_engine_play_sound(&soundData->engine, "../SantaGame/Assets/Sounds/Drop.wav", NULL);
 				break;
 			}
 		}
@@ -488,7 +444,7 @@ namespace SantaGame
 				game->combo = 0;
 				game->gameTimer = 0.0f;
 
-				CutePlaySound(soundData, &game->audioData.buttonUI, false);
+				ma_engine_play_sound(&soundData->engine, "../SantaGame/Assets/Sounds/ButtonUI.wav", NULL);
 
 				for(int i = 0; i < ARRAY_COUNT(game->missParticle); i++)
 				{
@@ -572,7 +528,7 @@ namespace SantaGame
 						game->combo = 0;
 						UpdateHUD(game);
 
-						CutePlaySound(soundData, &game->audioData.missed, false);
+						ma_engine_play_sound(&soundData->engine, "../SantaGame/Assets/Sounds/Missed.wav", NULL);
 
 						SpawnMissParticle(game);
 
@@ -607,7 +563,7 @@ namespace SantaGame
 									game->combo = 0;
 									game->lives--;
 
-									CutePlaySound(soundData, &game->audioData.missed, false);
+									ma_engine_play_sound(&soundData->engine, "../SantaGame/Assets/Sounds/Missed.wav", NULL);
 
 									SpawnMissParticle(game);
 								}
@@ -619,7 +575,7 @@ namespace SantaGame
 									game->combo += 1;
 									game->score += game->combo;
 
-									CutePlaySound(soundData, &game->audioData.hit, false);
+									ma_engine_play_sound(&soundData->engine, "../SantaGame/Assets/Sounds/Hit.wav", NULL);
 								}
 
 								UpdateHUD(game);
@@ -637,7 +593,7 @@ namespace SantaGame
 									game->buildings[j].lifeActive = false;
 									game->lives = Clamp(0, 3, game->lives + 1);
 
-									CutePlaySound(soundData, &game->audioData.pickup, false);
+									ma_engine_play_sound(&soundData->engine, "../SantaGame/Assets/Sounds/Pickup.wav", NULL);
 
 									UpdateHUD(game);
 								}

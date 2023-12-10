@@ -30,8 +30,8 @@
 #include "input_data.h"
 #include "sound_data.h"
 
-#define CUTE_SOUND_IMPLEMENTATION
-#include "External/cute_sound.h"
+#define MINIAUDIO_IMPLEMENTATION
+#include "External/miniaudio.h"
 
 #include "Utilities/carray.h"
 #include "Utilities/aabb.h"
@@ -193,54 +193,6 @@ namespace SantaGame
 		bool active;
 	};
 
-	struct AudioData
-	{
-		AudioData()
-		{
-			musicData = {};
-			music = {};
-
-			buttonUIData = {};
-			buttonUI = {};
-
-			dropData = {};
-			drop = {};
-
-			hitData = {};
-			hit = {};
-
-			missedData = {};
-			missed = {};
-
-			pickupData = {};
-			pickup = {};
-
-			lostData = {};
-			lost = {};
-		}
-
-		cs_loaded_sound_t musicData;
-		cs_playing_sound_t music;
-
-		cs_loaded_sound_t buttonUIData;
-		cs_playing_sound_t buttonUI;
-
-		cs_loaded_sound_t dropData;
-		cs_playing_sound_t drop;
-
-		cs_loaded_sound_t hitData;
-		cs_playing_sound_t hit;
-
-		cs_loaded_sound_t missedData;
-		cs_playing_sound_t missed;
-
-		cs_loaded_sound_t pickupData;
-		cs_playing_sound_t pickup;
-
-		cs_loaded_sound_t lostData;
-		cs_playing_sound_t lost;
-	};
-
 	enum class GameState
 	{
 		Menu = 0,
@@ -355,7 +307,6 @@ namespace SantaGame
 				buildings[i] = {};
 			}
 
-			audioData = {};
 			gameState = GameState::Menu;
 		}
 
@@ -421,8 +372,6 @@ namespace SantaGame
 		float nextBuildingXOffset = 0.0f;
 		BuildingImages buildingImages;
 		Building buildings[10];
-
-		AudioData audioData;
 
 		GameState gameState;
 	};
