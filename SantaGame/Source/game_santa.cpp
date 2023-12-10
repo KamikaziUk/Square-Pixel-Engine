@@ -214,6 +214,13 @@ namespace SantaGame
 
 		game->gameState = GameState::Menu;
 
+		// Setup audio
+		soundData->result = ma_engine_init(NULL, &soundData->engine);
+		if(soundData->result != MA_SUCCESS)
+		{
+			printf("failed to load mini audio\n");
+		}
+
 		const auto colorTitle = Color(255, 233, 0);
 
 		// Load images
@@ -336,6 +343,8 @@ namespace SantaGame
 			return;
 		}
 
+		ma_engine_uninit(&soundData->engine);
+
 		delete game;
 		game = nullptr;
 	}
@@ -408,17 +417,41 @@ namespace SantaGame
 		}
 	}
 
-	void OnGameUpdate(InputData* inputData, SoundData* soundData, CameraRect* mainCamera, float deltaTime)
+	void RestartGame(InputData* inputData, SoundData* soundData)
+	{
+		game->gameState = GameState::Game;
+		game->delayTimer = 0.5f;
+
+		game->lives = 3;
+		game->score = 0;
+		game->combo = 0;
+		game->gameTimer = 0.0f;
+
+		ma_engine_play_sound(&soundData->engine, "../SantaGame/Assets/Sounds/ButtonUI.wav", NULL);
+
+		for(int i = 0; i < ARRAY_COUNT(game->missParticle); i++)
+		{
+			game->missParticle[i].active = false;
+		}
+	}
+
+	bool OnGameUpdate(InputData* inputData, SoundData* soundData, CameraRect* mainCamera, float deltaTime)
 	{
 		game->gameTimer += deltaTime;
 		game->delayTimer -= deltaTime;
 
 		if(game->gameState == GameState::Menu)
 		{
+			if(GetMenuButton(inputData) == ButtonState::Down)
+			{
+				return true;
+			}
+
 			// Start the game
 			if(game->delayTimer <= 0.0f && GetActionButton(inputData) == ButtonState::Down)
 			{
 				game->gameState = GameState::Game;
+				RestartGame(inputData, soundData);
 			}
 
 			// Show a little santa animation & flicker text
@@ -436,20 +469,7 @@ namespace SantaGame
 			// Restart the game
 			if(game->delayTimer <= 0.0f && GetActionButton(inputData) == ButtonState::Down)
 			{
-				game->gameState = GameState::Game;
-				game->delayTimer = 0.5f;
-
-				game->lives = 3;
-				game->score = 0;
-				game->combo = 0;
-				game->gameTimer = 0.0f;
-
-				ma_engine_play_sound(&soundData->engine, "../SantaGame/Assets/Sounds/ButtonUI.wav", NULL);
-
-				for(int i = 0; i < ARRAY_COUNT(game->missParticle); i++)
-				{
-					game->missParticle[i].active = false;
-				}
+				RestartGame(inputData, soundData);
 			}
 
 			// Animated background
@@ -464,6 +484,12 @@ namespace SantaGame
 		}
 		else
 		{
+			if(GetMenuButton(inputData) == ButtonState::Down)
+			{
+				game->gameState = GameState::Menu;
+				game->delayTimer = 0.5f;
+			}
+
 			// Drop present when user presses button
 			if(game->delayTimer <= 0.0f && GetActionButton(inputData) == ButtonState::Down)
 			{
@@ -648,6 +674,8 @@ namespace SantaGame
 				}
 			}
 		}
+
+		return false;
 	}
 
 	void OnGameRender(CameraRect* mainCamera, ScreenData* sD, int screenSize)
