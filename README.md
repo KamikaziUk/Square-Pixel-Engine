@@ -39,7 +39,4 @@ Example game
 
 ## Third party header files:
 Stb image: https://github.com/nothings/stb/blob/master/stb_image.h
-Mini audio: https://github.com/mackron/miniaudio 
-
-MIT
-https://github.com/nothings/stb
+Mini audio: https://github.com/mackron/miniaudio
