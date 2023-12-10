@@ -1,6 +1,6 @@
-# C++ Pixel Engine
+# C++ Pixel Engine (Current version 0.2)
 Square engine is a small & lightweight engine that allows you to easily create 2D pixel art games. 
-The current version is 0.1 and will be updated with new features & bug fixes later.
+The game will be updated with new features & bug fixes later.
 
 Play the game here https://mg.itch.io/kringles-delivery
 
