@@ -1,3 +1,25 @@
+// Copyright (c) Marty Green 2023
+// https://github.com/KamikaziUk
+
+// MIT License
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this softwareand associated documentation files(the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and /or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions :
+// 
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+// 
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #pragma comment(lib, "winmm.lib")
@@ -8,10 +30,9 @@
 #include "sound_data.h"
 #include "input_data.h"
 #include "launcher_data.h"
+#include "Input/launcher_input.h"
 
 #include "Drawing/cameras.cpp"
-#include "Input/launcher_input.h"
-#include "launcher_rendering.h"
 
 using namespace MainLauncher;
 
@@ -20,10 +41,11 @@ WindowData windowData = {};
 SoundData soundData = {};
 InputData inputData = {};
 LauncherData launcherData = {};
+HINSTANCE gameDLL = NULL;
 
 // GameDLL
 typedef void(__stdcall* OnGameStart)(SoundData* soundData, CameraRect* mainCamera);
-typedef void(__stdcall* OnGameUpdate)(InputData* inputData, SoundData* soundData, CameraRect* mainCamera, float deltaTime);
+typedef bool(__stdcall* OnGameUpdate)(InputData* inputData, SoundData* soundData, CameraRect* mainCamera, float deltaTime);
 typedef void(__stdcall* OnGameRender)(CameraRect* mainCamera, ScreenData* sD, int screenSize);
 typedef void(__stdcall* OnGameEnd)(SoundData* soundData, CameraRect* mainCamera);
 
@@ -50,26 +72,21 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg,
     return DefWindowProcW(hwnd, msg, wParam, lParam);
 }
 
-// Main for launcher
-int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLine, int nCmdShow)
+void UnloadDLL()
 {
-    printf("starting program \n");
-
-#ifdef _DEBUG
-    // Setup console
+    if(gameDLL != NULL)
     {
-        AllocConsole();
-        auto consoleFile0 = freopen("CONIN$", "r", stdin);
-        auto consoleFile1 = freopen("CONOUT$", "w", stdout);
-        auto consoleFile2 = freopen("CONOUT$", "w", stderr);
+        FreeLibrary(gameDLL);
+        gameDLL = nullptr;
     }
-#endif
+}
 
-    // Load DLL for game
-    HINSTANCE gameDLL = LoadLibrary(L"SantaGame.dll");
+int LoadDLL(LPCWSTR dllName)
+{
+    gameDLL = LoadLibrary(dllName);
     if(gameDLL == NULL)
     {
-        printf("cannot load game .dll file\n"); 
+        printf("cannot load game .dll file\n");
         system("pause");
         return 1;
     }
@@ -108,6 +125,24 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLin
         }
     }
 
+    return 0;
+}
+
+// Main for launcher
+int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLine, int nCmdShow)
+{
+    printf("starting program \n");
+
+#ifdef _DEBUG
+    // Setup console
+    {
+        AllocConsole();
+        auto consoleFile0 = freopen("CONIN$", "r", stdin);
+        auto consoleFile1 = freopen("CONOUT$", "w", stdout);
+        auto consoleFile2 = freopen("CONOUT$", "w", stderr);
+    }
+#endif
+
     // Win32 window settings
     WNDCLASSW wc = { 0 };
     wc.style = CS_HREDRAW | CS_VREDRAW;
@@ -131,7 +166,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLin
 
     RegisterClassW(&wc);
     windowData.window = CreateWindowW(wc.lpszClassName, L"Square Engine by MGGames",
-        WS_OVERLAPPEDWINDOW | WS_VISIBLE,
+        WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_VISIBLE,
         (width / 2) - (actualScreenWidth / 2), (height / 2) - (actualScreenHeight / 2), 
         actualScreenWidth, actualScreenHeight, NULL, NULL, hInstance, NULL);
 
@@ -170,16 +205,19 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLin
     windowData.cameras[CameraTypes::Gameplay] = 
         CameraRect(32, 32, 160, 144, true);
 
-    launcherData.rendering = LauncherRenderingSetup(&windowData.cameras[CameraTypes::Launcher]);
+    // Setup a few games
+    launcherData.gameLaunchData[launcherData.gameLaunchDataCount++] =
+        GameLaunchData(L"SantaGame.dll", "Assets/Sprites/SantaGameCartridge.png");
+    launcherData.gameLaunchData[launcherData.gameLaunchDataCount++] =
+        GameLaunchData(L"SantaGame.dll", "Assets/Sprites/ComingSoonCartridge.png");
+
+    launcherData.rendering = LauncherRenderingSetup(&windowData.cameras[CameraTypes::Launcher], &launcherData);
 
     printf("emulator render setup \n");
 
     // Setup time
     srand((unsigned int)time(NULL));
     windowData.startTime = (float)clock();
-
-    // Setup audio
-    soundData.ctx = cs_make_context(windowData.window, 44100, 8192, 0, NULL);
 
     printf("finished window setup \n");
 
@@ -222,6 +260,27 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLin
                 if(launcherData.rendering.introAnimation->currentTime ==
                     launcherData.rendering.introAnimation->animations[currentAnimId].animationTime)
                 {
+                    launcherData.state = LauncherState::GameChooser;
+                }
+            }
+            break;
+
+            case LauncherState::GameChooser:
+            {
+                if(GetMenuButton(&inputData) == ButtonState::Down)
+                {
+                    windowData.isRunning = false;
+                }
+
+                LauncherUpdateGameChooser(&inputData, &launcherData, launcherData.gameLaunchDataCount, windowData.deltaTime);
+
+                if(launcherData.currentSelectedGame != -1)
+                {
+                    if(LoadDLL(launcherData.gameLaunchData[launcherData.currentSelectedGame].dllName))
+                    {
+                        return -1;
+                    }
+
                     launcherData.state = LauncherState::GameStart;
                 }
             }
@@ -236,7 +295,17 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLin
 
             case LauncherState::GameUpdate:
             {
-                gameUpdate(&inputData, &soundData, &windowData.cameras[CameraTypes::Gameplay], windowData.deltaTime);
+                bool closeGame = gameUpdate(&inputData, &soundData, &windowData.cameras[CameraTypes::Gameplay], windowData.deltaTime);
+                if(closeGame)
+                {
+                    launcherData.currentSelectedGame = -1;
+                    launcherData.currentHighlightedGame = 0;
+
+                    gameEnd(&soundData, &windowData.cameras[CameraTypes::Gameplay]);
+                    UnloadDLL();
+
+                    launcherData.state = LauncherState::GameChooser;
+                }
             }
             break;
         }
@@ -263,6 +332,12 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLin
                 }
                 break;
 
+                case LauncherState::GameChooser:
+                {
+                    LauncherRenderGameChooser(screenData, screenSize, &launcherData);
+                }
+                break;
+
                 case LauncherState::GameUpdate:
                 {
                     gameRender(&windowData.cameras[CameraTypes::Gameplay], screenData, screenSize);
@@ -286,9 +361,6 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLin
             );
         }
 
-        // Update audio
-        cs_mix(soundData.ctx);
-
         if(windowData.deltaTime > 0)
         {
             windowData.fps = CLOCKS_PER_SEC / windowData.deltaTime;
@@ -296,9 +368,12 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLin
     }
 
     // Clean up any resources etc
-    gameEnd(&soundData, &windowData.cameras[CameraTypes::Gameplay]);
+    if(gameDLL != NULL)
+    {
+        gameEnd(&soundData, &windowData.cameras[CameraTypes::Gameplay]);
+    }
 
-    //cs_shutdown_context(soundData.ctx);
+    UnloadDLL();
 
     for(int i = 0; i < launcherData.rendering.imagesSize; i++)
     {
@@ -307,6 +382,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLin
 
     delete[] launcherData.rendering.sprites;
     delete[] launcherData.rendering.newImages;
+    delete[] launcherData.rendering.launchGameImages;
 
     delete[]  windowData.screenData.sortDepthBuffer;
 

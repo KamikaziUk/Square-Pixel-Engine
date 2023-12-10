@@ -1,3 +1,25 @@
+// Copyright (c) Marty Green 2023
+// https://github.com/KamikaziUk
+
+// MIT License
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this softwareand associated documentation files(the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and /or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions :
+// 
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+// 
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
 #include "game_santa.h"
 
 using namespace SquarePixelEngine;
@@ -9,32 +31,6 @@ using namespace Utilities;
 namespace SantaGame
 {
 	GameData* game = nullptr;
-
-	void CuteLoadSound(const SoundData* inputData, const char* soundPath, cs_playing_sound_t* playSound, cs_loaded_sound_t* loadSound)
-	{
-		if(inputData->ctx != nullptr)
-		{
-			*loadSound = cs_load_wav(soundPath);
-			*playSound = cs_make_playing_sound(loadSound);
-		}
-	}
-
-	void CutePlaySound(const SoundData* soundData, cs_playing_sound_t* sound, bool loop)
-	{
-		if(soundData->ctx != nullptr)
-		{
-			cs_insert_sound(soundData->ctx, sound);
-			cs_loop_sound(sound, loop ? 1 : 0);
-		}
-	}
-
-	void CuteReleaseSound(const SoundData* soundData, cs_loaded_sound_t* sound)
-	{
-		if(soundData->ctx != nullptr)
-		{
-			cs_free_sound(sound);
-		}
-	}
 
 	void GenerateBuilding(GameData* game, CameraRect* mainCamera)
 	{
@@ -218,20 +214,27 @@ namespace SantaGame
 
 		game->gameState = GameState::Menu;
 
+		// Setup audio
+		soundData->result = ma_engine_init(NULL, &soundData->engine);
+		if(soundData->result != MA_SUCCESS)
+		{
+			printf("failed to load mini audio\n");
+		}
+
 		const auto colorTitle = Color(255, 233, 0);
 
 		// Load images
-		game->santaImage = LoadImageFromFile("../SantaGame/Assets/Sprites/Santa.png");
-		game->skyImage = LoadImageFromFile("../SantaGame/Assets/Sprites/Sky.png");
-		game->backdropImage = LoadImageFromFile("../SantaGame/Assets/Sprites/Backdrop.png");
-		game->cloudImage = LoadImageFromFile("../SantaGame/Assets/Sprites/Clouds.png");
-		game->moonImage = LoadImageFromFile("../SantaGame/Assets/Sprites/Moon.png");
-		game->menuImage = LoadImageFromFile("../SantaGame/Assets/Sprites/Menu.png");
-		game->lifeImage = LoadImageFromFile("../SantaGame/Assets/Sprites/Life.png");
+		game->santaImage = LoadImageFromFile("SantaGame/Sprites/Santa.png");
+		game->skyImage = LoadImageFromFile("SantaGame/Sprites/Sky.png");
+		game->backdropImage = LoadImageFromFile("SantaGame/Sprites/Backdrop.png");
+		game->cloudImage = LoadImageFromFile("SantaGame/Sprites/Clouds.png");
+		game->moonImage = LoadImageFromFile("SantaGame/Sprites/Moon.png");
+		game->menuImage = LoadImageFromFile("SantaGame/Sprites/Menu.png");
+		game->lifeImage = LoadImageFromFile("SantaGame/Sprites/Life.png");
 
-		game->presentImages[0] = LoadImageFromFile("../SantaGame/Assets/Sprites/Present0.png");
-		game->presentImages[1] = LoadImageFromFile("../SantaGame/Assets/Sprites/Present1.png");
-		game->presentImages[2] = LoadImageFromFile("../SantaGame/Assets/Sprites/Present2.png");
+		game->presentImages[0] = LoadImageFromFile("SantaGame/Sprites/Present0.png");
+		game->presentImages[1] = LoadImageFromFile("SantaGame/Sprites/Present1.png");
+		game->presentImages[2] = LoadImageFromFile("SantaGame/Sprites/Present2.png");
 
 		// Load sprite data
 		for(int i = 0; i < ARRAY_COUNT(game->liveSprites); i++)
@@ -245,13 +248,13 @@ namespace SantaGame
 		game->clouds = Sprite(0, 0, 1, &game->cloudImage, mainCamera);
 
 		game->santa = SpriteAnimated(48, 80, 64, 32, 1, &game->santaImage, mainCamera);
-		LoadAnimation(&game->santa, "../SantaGame/Assets/AnimFiles/Santa.anim");
+		LoadAnimation(&game->santa, "SantaGame/AnimFiles/Santa.anim");
 
 		game->menu = SpriteAnimated(0, 0, 160, 144, 1, &game->menuImage, mainCamera);
-		LoadAnimation(&game->menu, "../SantaGame/Assets/AnimFiles/Menu.anim");
+		LoadAnimation(&game->menu, "SantaGame/AnimFiles/Menu.anim");
 
 		// Load font
-		game->textFont = LoadImageFromFile("../SantaGame/Assets/Fonts/Font16.png");
+		game->textFont = LoadImageFromFile("SantaGame/Fonts/Font16.png");
 
 		// Load text
 		sprintf_s(game->scoreStr, "SCORE 0");
@@ -270,54 +273,54 @@ namespace SantaGame
 		game->titleText2 = Text(76, 144 - 35, 6, 6, 17, game->titleStr2, 16, 10, colorTitle, &game->textFont, mainCamera);
 
 		// Load building images
-		game->buildingImages.roofImage1[0] = LoadImageFromFile("../SantaGame/Assets/Sprites/RoofTile1_0.png");
-		game->buildingImages.roofImage2[0] = LoadImageFromFile("../SantaGame/Assets/Sprites/RoofTile2_0.png");
-		game->buildingImages.roofImage3[0] = LoadImageFromFile("../SantaGame/Assets/Sprites/RoofTile3_0.png");
-		game->buildingImages.roofImage4[0] = LoadImageFromFile("../SantaGame/Assets/Sprites/RoofTile4_0.png");
+		game->buildingImages.roofImage1[0] = LoadImageFromFile("SantaGame/Sprites/RoofTile1_0.png");
+		game->buildingImages.roofImage2[0] = LoadImageFromFile("SantaGame/Sprites/RoofTile2_0.png");
+		game->buildingImages.roofImage3[0] = LoadImageFromFile("SantaGame/Sprites/RoofTile3_0.png");
+		game->buildingImages.roofImage4[0] = LoadImageFromFile("SantaGame/Sprites/RoofTile4_0.png");
 
-		game->buildingImages.chimneyImage = LoadImageFromFile("../SantaGame/Assets/Sprites/Chimney0.png");
+		game->buildingImages.chimneyImage = LoadImageFromFile("SantaGame/Sprites/Chimney0.png");
 
-		game->buildingImages.buildingBlockImage[0] = LoadImageFromFile("../SantaGame/Assets/Sprites/BuildingBlock0.png");
-		game->buildingImages.buildingBlockImage[1] = LoadImageFromFile("../SantaGame/Assets/Sprites/BuildingBlock1.png");
-		game->buildingImages.buildingBlockImage[2] = LoadImageFromFile("../SantaGame/Assets/Sprites/BuildingBlock2.png");
-		game->buildingImages.buildingBlockImage[3] = LoadImageFromFile("../SantaGame/Assets/Sprites/BuildingBlock3.png");
+		game->buildingImages.buildingBlockImage[0] = LoadImageFromFile("SantaGame/Sprites/BuildingBlock0.png");
+		game->buildingImages.buildingBlockImage[1] = LoadImageFromFile("SantaGame/Sprites/BuildingBlock1.png");
+		game->buildingImages.buildingBlockImage[2] = LoadImageFromFile("SantaGame/Sprites/BuildingBlock2.png");
+		game->buildingImages.buildingBlockImage[3] = LoadImageFromFile("SantaGame/Sprites/BuildingBlock3.png");
 
-		game->buildingImages.windowImages[0] = LoadImageFromFile("../SantaGame/Assets/Sprites/Window0.png");
-		game->buildingImages.windowImages[1] = LoadImageFromFile("../SantaGame/Assets/Sprites/Window1.png");
-		game->buildingImages.windowImages[2] = LoadImageFromFile("../SantaGame/Assets/Sprites/Window2.png");
+		game->buildingImages.windowImages[0] = LoadImageFromFile("SantaGame/Sprites/Window0.png");
+		game->buildingImages.windowImages[1] = LoadImageFromFile("SantaGame/Sprites/Window1.png");
+		game->buildingImages.windowImages[2] = LoadImageFromFile("SantaGame/Sprites/Window2.png");
 
-		game->buildingImages.foregroundImages[0] = LoadImageFromFile("../SantaGame/Assets/Sprites/Foreground0.png");
-		game->buildingImages.foregroundImages[1] = LoadImageFromFile("../SantaGame/Assets/Sprites/Foreground1.png");
-		game->buildingImages.foregroundImages[2] = LoadImageFromFile("../SantaGame/Assets/Sprites/Foreground2.png");
+		game->buildingImages.foregroundImages[0] = LoadImageFromFile("SantaGame/Sprites/Foreground0.png");
+		game->buildingImages.foregroundImages[1] = LoadImageFromFile("SantaGame/Sprites/Foreground1.png");
+		game->buildingImages.foregroundImages[2] = LoadImageFromFile("SantaGame/Sprites/Foreground2.png");
 
-		game->buildingImages.chimneyParticleImage = LoadImageFromFile("../SantaGame/Assets/Sprites/ChimneyParticle.png");
-		game->buildingImages.lifeParticleImage = LoadImageFromFile("../SantaGame/Assets/Sprites/LifePickup.png");
-		game->buildingImages.naughtySignImage = LoadImageFromFile("../SantaGame/Assets/Sprites/NaughtySign.png");
+		game->buildingImages.chimneyParticleImage = LoadImageFromFile("SantaGame/Sprites/ChimneyParticle.png");
+		game->buildingImages.lifeParticleImage = LoadImageFromFile("SantaGame/Sprites/LifePickup.png");
+		game->buildingImages.naughtySignImage = LoadImageFromFile("SantaGame/Sprites/NaughtySign.png");
 
 		// Load building props
 		for(int i = 0; i < ARRAY_COUNT(game->buildings); i++)
 		{
 			game->buildings[i].chimneyParticle = 
 				SpriteAnimated(0, 0, 16, 16, 2, &game->buildingImages.chimneyParticleImage, mainCamera);
-			LoadAnimation(&game->buildings[i].chimneyParticle, "../SantaGame/Assets/AnimFiles/ChimneyParticle.anim");
+			LoadAnimation(&game->buildings[i].chimneyParticle, "SantaGame/AnimFiles/ChimneyParticle.anim");
 
 			game->buildings[i].lifeParticle = 
 				SpriteAnimated(0, 0, 16, 16, 3, &game->buildingImages.lifeParticleImage, mainCamera);
-			LoadAnimation(&game->buildings[i].lifeParticle, "../SantaGame/Assets/AnimFiles/LifePickup.anim");
+			LoadAnimation(&game->buildings[i].lifeParticle, "SantaGame/AnimFiles/LifePickup.anim");
 
 			game->buildings[i].naughtySign = 
 				SpriteAnimated(0, 0, 32, 16, 3, &game->buildingImages.naughtySignImage, mainCamera);
-			LoadAnimation(&game->buildings[i].naughtySign, "../SantaGame/Assets/AnimFiles/NaughtySign.anim");
+			LoadAnimation(&game->buildings[i].naughtySign, "SantaGame/AnimFiles/NaughtySign.anim");
 
 			GenerateBuilding(game, mainCamera);
 		}
 
 		// Load missed particle effects
-		game->missParticleImage = LoadImageFromFile("../SantaGame/Assets/Sprites/MissParticle.png");
+		game->missParticleImage = LoadImageFromFile("SantaGame/Sprites/MissParticle.png");
 		for(int i = 0; i < ARRAY_COUNT(game->missParticle); i++)
 		{
 			game->missParticle[i].chimneyParticle = SpriteAnimated(0, 0, 16, 16, 4, &game->missParticleImage, mainCamera);
-			LoadAnimation(&game->missParticle[i].chimneyParticle, "../SantaGame/Assets/AnimFiles/MissParticle.anim");
+			LoadAnimation(&game->missParticle[i].chimneyParticle, "SantaGame/AnimFiles/MissParticle.anim");
 		}
 
 		// Randomize snow particles
@@ -327,17 +330,7 @@ namespace SantaGame
 			game->snowParticleY[y] = (float)RandomMinMax(144, 288);
 		}
 
-		// Load audio data
-		CuteLoadSound(soundData, "../SantaGame/Assets/Sounds/Music.wav", &game->audioData.music, &game->audioData.musicData);
-		CuteLoadSound(soundData, "../SantaGame/Assets/Sounds/ButtonUI.wav", &game->audioData.buttonUI, &game->audioData.buttonUIData);
-		CuteLoadSound(soundData, "../SantaGame/Assets/Sounds/Drop.wav", &game->audioData.drop, &game->audioData.dropData);
-		CuteLoadSound(soundData, "../SantaGame/Assets/Sounds/Hit.wav", &game->audioData.hit, &game->audioData.hitData);
-		CuteLoadSound(soundData, "../SantaGame/Assets/Sounds/Missed.wav", &game->audioData.missed, &game->audioData.missedData);
-		CuteLoadSound(soundData, "../SantaGame/Assets/Sounds/Pickup.wav", &game->audioData.pickup, &game->audioData.pickupData);
-		CuteLoadSound(soundData, "../SantaGame/Assets/Sounds/Lost.wav", &game->audioData.lost, &game->audioData.lostData);
-
-		// Start music
-		CutePlaySound(soundData, &game->audioData.music, true);
+		ma_engine_play_sound(&soundData->engine, "SantaGame/Sounds/Music.wav", NULL);
 
 		game->score = 0;
 		game->lives = ARRAY_COUNT(game->liveSprites);
@@ -350,13 +343,7 @@ namespace SantaGame
 			return;
 		}
 
-		CuteReleaseSound(soundData, &game->audioData.musicData);
-		CuteReleaseSound(soundData, &game->audioData.buttonUIData);
-		CuteReleaseSound(soundData, &game->audioData.dropData);
-		CuteReleaseSound(soundData, &game->audioData.hitData);
-		CuteReleaseSound(soundData, &game->audioData.missedData);
-		CuteReleaseSound(soundData, &game->audioData.pickupData);
-		CuteReleaseSound(soundData, &game->audioData.lostData);
+		ma_engine_uninit(&soundData->engine);
 
 		delete game;
 		game = nullptr;
@@ -372,7 +359,7 @@ namespace SantaGame
 	}
 
 	// Update final UI & play sound when game over
-	void GameOver(const SoundData* soundData, GameData* game)
+	void GameOver(SoundData* soundData, GameData* game)
 	{
 		game->gameState = GameState::End;
 
@@ -387,13 +374,13 @@ namespace SantaGame
 		sprintf_s(game->titleStr2, "BEST %d", game->bestScore);
 		game->titleText2.stringLength = 6 + ((game->bestScore / 10) + 1);
 
-		CutePlaySound(soundData, &game->audioData.lost, false);
+		ma_engine_play_sound(&soundData->engine, "SantaGame/Sounds/Lost.wav", NULL);
 
 		game->delayTimer = 0.5f;
 	}
 
 	// Spawn present that falls
-	void DropPresent(const SoundData* soundData, GameData* game, CameraRect* mainCamera)
+	void DropPresent(SoundData* soundData, GameData* game, CameraRect* mainCamera)
 	{
 		for(int i = 0; i < ARRAY_COUNT(game->presents); i++)
 		{
@@ -408,7 +395,7 @@ namespace SantaGame
 				game->santa.currentAnimationID = 1;
 				game->santa.currentTime = 0.0f;
 
-				CutePlaySound(soundData, &game->audioData.drop, false);
+				ma_engine_play_sound(&soundData->engine, "SantaGame/Sounds/Drop.wav", NULL);
 				break;
 			}
 		}
@@ -430,17 +417,41 @@ namespace SantaGame
 		}
 	}
 
-	void OnGameUpdate(InputData* inputData, SoundData* soundData, CameraRect* mainCamera, float deltaTime)
+	void RestartGame(InputData* inputData, SoundData* soundData)
+	{
+		game->gameState = GameState::Game;
+		game->delayTimer = 0.5f;
+
+		game->lives = 3;
+		game->score = 0;
+		game->combo = 0;
+		game->gameTimer = 0.0f;
+
+		ma_engine_play_sound(&soundData->engine, "SantaGame/Sounds/ButtonUI.wav", NULL);
+
+		for(int i = 0; i < ARRAY_COUNT(game->missParticle); i++)
+		{
+			game->missParticle[i].active = false;
+		}
+	}
+
+	bool OnGameUpdate(InputData* inputData, SoundData* soundData, CameraRect* mainCamera, float deltaTime)
 	{
 		game->gameTimer += deltaTime;
 		game->delayTimer -= deltaTime;
 
 		if(game->gameState == GameState::Menu)
 		{
+			if(GetMenuButton(inputData) == ButtonState::Down)
+			{
+				return true;
+			}
+
 			// Start the game
 			if(game->delayTimer <= 0.0f && GetActionButton(inputData) == ButtonState::Down)
 			{
 				game->gameState = GameState::Game;
+				RestartGame(inputData, soundData);
 			}
 
 			// Show a little santa animation & flicker text
@@ -458,20 +469,7 @@ namespace SantaGame
 			// Restart the game
 			if(game->delayTimer <= 0.0f && GetActionButton(inputData) == ButtonState::Down)
 			{
-				game->gameState = GameState::Game;
-				game->delayTimer = 0.5f;
-
-				game->lives = 3;
-				game->score = 0;
-				game->combo = 0;
-				game->gameTimer = 0.0f;
-
-				CutePlaySound(soundData, &game->audioData.buttonUI, false);
-
-				for(int i = 0; i < ARRAY_COUNT(game->missParticle); i++)
-				{
-					game->missParticle[i].active = false;
-				}
+				RestartGame(inputData, soundData);
 			}
 
 			// Animated background
@@ -486,6 +484,12 @@ namespace SantaGame
 		}
 		else
 		{
+			if(GetMenuButton(inputData) == ButtonState::Down)
+			{
+				game->gameState = GameState::Menu;
+				game->delayTimer = 0.5f;
+			}
+
 			// Drop present when user presses button
 			if(game->delayTimer <= 0.0f && GetActionButton(inputData) == ButtonState::Down)
 			{
@@ -550,7 +554,7 @@ namespace SantaGame
 						game->combo = 0;
 						UpdateHUD(game);
 
-						CutePlaySound(soundData, &game->audioData.missed, false);
+						ma_engine_play_sound(&soundData->engine, "SantaGame/Sounds/Missed.wav", NULL);
 
 						SpawnMissParticle(game);
 
@@ -585,7 +589,7 @@ namespace SantaGame
 									game->combo = 0;
 									game->lives--;
 
-									CutePlaySound(soundData, &game->audioData.missed, false);
+									ma_engine_play_sound(&soundData->engine, "SantaGame/Sounds/Missed.wav", NULL);
 
 									SpawnMissParticle(game);
 								}
@@ -597,7 +601,7 @@ namespace SantaGame
 									game->combo += 1;
 									game->score += game->combo;
 
-									CutePlaySound(soundData, &game->audioData.hit, false);
+									ma_engine_play_sound(&soundData->engine, "SantaGame/Sounds/Hit.wav", NULL);
 								}
 
 								UpdateHUD(game);
@@ -615,7 +619,7 @@ namespace SantaGame
 									game->buildings[j].lifeActive = false;
 									game->lives = Clamp(0, 3, game->lives + 1);
 
-									CutePlaySound(soundData, &game->audioData.pickup, false);
+									ma_engine_play_sound(&soundData->engine, "SantaGame/Sounds/Pickup.wav", NULL);
 
 									UpdateHUD(game);
 								}
@@ -670,6 +674,8 @@ namespace SantaGame
 				}
 			}
 		}
+
+		return false;
 	}
 
 	void OnGameRender(CameraRect* mainCamera, ScreenData* sD, int screenSize)

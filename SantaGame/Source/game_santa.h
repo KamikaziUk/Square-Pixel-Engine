@@ -1,3 +1,25 @@
+// Copyright (c) Marty Green 2023
+// https://github.com/KamikaziUk
+
+// MIT License
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this softwareand associated documentation files(the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and /or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions :
+// 
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+// 
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
 #pragma once
 #ifndef GAME_SANTA
 #define GAME_SANTA
@@ -8,8 +30,8 @@
 #include "input_data.h"
 #include "sound_data.h"
 
-#define CUTE_SOUND_IMPLEMENTATION
-#include "External/cute_sound.h"
+#define MINIAUDIO_IMPLEMENTATION
+#include "External/miniaudio.h"
 
 #include "Utilities/carray.h"
 #include "Utilities/aabb.h"
@@ -171,54 +193,6 @@ namespace SantaGame
 		bool active;
 	};
 
-	struct AudioData
-	{
-		AudioData()
-		{
-			musicData = {};
-			music = {};
-
-			buttonUIData = {};
-			buttonUI = {};
-
-			dropData = {};
-			drop = {};
-
-			hitData = {};
-			hit = {};
-
-			missedData = {};
-			missed = {};
-
-			pickupData = {};
-			pickup = {};
-
-			lostData = {};
-			lost = {};
-		}
-
-		cs_loaded_sound_t musicData;
-		cs_playing_sound_t music;
-
-		cs_loaded_sound_t buttonUIData;
-		cs_playing_sound_t buttonUI;
-
-		cs_loaded_sound_t dropData;
-		cs_playing_sound_t drop;
-
-		cs_loaded_sound_t hitData;
-		cs_playing_sound_t hit;
-
-		cs_loaded_sound_t missedData;
-		cs_playing_sound_t missed;
-
-		cs_loaded_sound_t pickupData;
-		cs_playing_sound_t pickup;
-
-		cs_loaded_sound_t lostData;
-		cs_playing_sound_t lost;
-	};
-
 	enum class GameState
 	{
 		Menu = 0,
@@ -333,7 +307,6 @@ namespace SantaGame
 				buildings[i] = {};
 			}
 
-			audioData = {};
 			gameState = GameState::Menu;
 		}
 
@@ -399,8 +372,6 @@ namespace SantaGame
 		float nextBuildingXOffset = 0.0f;
 		BuildingImages buildingImages;
 		Building buildings[10];
-
-		AudioData audioData;
 
 		GameState gameState;
 	};
