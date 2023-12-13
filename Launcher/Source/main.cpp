@@ -34,6 +34,9 @@
 
 #include "Drawing/cameras.cpp"
 
+#include "Utilities/algorithms.h"
+#include "Utilities/carray.h"
+
 using namespace MainLauncher;
 
 // Global engine data
@@ -218,6 +221,8 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLin
     // Setup time
     srand((unsigned int)time(NULL));
     windowData.startTime = (float)clock();
+
+    Utilities::AlgorithmTesting();
 
     printf("finished window setup \n");
 
