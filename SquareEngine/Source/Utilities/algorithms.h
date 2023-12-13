@@ -30,8 +30,10 @@
 namespace Utilities
 {
 	#define SortFuncDef bool (*sortFunction)(const void* data0, const void* data1)
+	#define FindFuncDef bool (*findGreaterFunction)(const void* data0, const void* data1)
 	#define LONG long int
 
+	// Swaps two elements
 	inline void Swap(void* currentPtr, void* nextPtr, LONG dataBlockSize)
 	{
 		void* cachedCurrentData = new char[dataBlockSize];
@@ -43,30 +45,32 @@ namespace Utilities
 		delete[] cachedCurrentData;
 	}
 
+	// Swaps the elements in this partition
 	inline LONG QuickSortPartition(void* data,
 		const LONG startIdx, const LONG endIdx, const LONG dataBlockSize, SortFuncDef)
 	{
-		auto pivotPtr = (char*)data + (endIdx * dataBlockSize);
+		char* pivotPtr = (char*)data + (endIdx * dataBlockSize);
 		LONG i = (startIdx - 1);
 
 		for(LONG j = startIdx; j <= endIdx - 1; j++)
 		{
-			auto currentJPtr = (char*)data + (j * dataBlockSize);
+			char* currentJPtr = (char*)data + (j * dataBlockSize);
 
 			if(sortFunction(currentJPtr, pivotPtr))
 			{
 				i++;
-				auto currentIPtr = (char*)data + (i * dataBlockSize);
+				char* currentIPtr = (char*)data + (i * dataBlockSize);
 				Swap(currentIPtr, currentJPtr, dataBlockSize);
 			}
 		}
 
-		auto nextPtr = (char*)data + ((i + 1) * dataBlockSize);
-		auto endPtr = (char*)data + (endIdx * dataBlockSize);
+		char* nextPtr = (char*)data + ((i + 1) * dataBlockSize);
+		char* endPtr = (char*)data + (endIdx * dataBlockSize);
 		Swap(nextPtr, endPtr, dataBlockSize);
 		return (i + 1);
 	}
 
+	// Starts with a pivot then puts all elements into left and right sides
 	inline void QuickSort(void* data,
 		const LONG startIdx, const LONG endIdx, const LONG dataBlockSize, SortFuncDef)
 	{
@@ -78,6 +82,7 @@ namespace Utilities
 		}
 	}
 
+	// Swaps elements while walking through it linearly
 	inline void BubbleSort(void* data, 
 		const LONG dataCount, const LONG dataBlockSize, SortFuncDef)
 	{
@@ -89,8 +94,8 @@ namespace Utilities
 
 			for(LONG j = 0; j < (dataCount - 1) - i; j++)
 			{
-				auto currentPtr = (char*)data + (j * dataBlockSize);
-				auto nextPtr = (char*)data + ((j + 1) * dataBlockSize);
+				char* currentPtr = (char*)data + (j * dataBlockSize);
+				char* nextPtr = (char*)data + ((j + 1) * dataBlockSize);
 
 				if(!sortFunction(currentPtr, nextPtr))
 				{
@@ -104,6 +109,34 @@ namespace Utilities
 				break;
 			}
 		}
+	}
+
+	// Checks middle element then searchs right or left side (keeps doing this until found)
+	inline int BinarySearch(void* data, const LONG dataCount,
+		const void* dataToFind, const LONG dataBlockSize, FindFuncDef)
+	{
+		int startIdx = 0;
+		int endIdx = dataCount - 1;
+		while(startIdx <= endIdx)
+		{
+			const int middleIdx = (startIdx + endIdx) / 2;
+			const char* middlePtr = (char*)data + (middleIdx * dataBlockSize);
+
+			if(memcmp(middlePtr, dataToFind, dataBlockSize) == 0)
+			{
+				return middleIdx;
+			} 
+			else if(findGreaterFunction(dataToFind, middlePtr))
+			{
+				startIdx = middleIdx + 1;
+			}
+			else
+			{
+				endIdx = middleIdx - 1;
+			}
+		}
+
+		return -1;
 	}
 
 	inline void AlgorithmPrintData(const char* algorithmName, int* data, int dataSize)
@@ -133,6 +166,17 @@ namespace Utilities
 		int sortQuickData[] = { 4, 1, 0, 3, 2, 5 };
 		Utilities::QuickSort(&sortQuickData, 0, ARRAY_COUNT(sortQuickData) - 1, sizeof(int), sortFunc);
 		AlgorithmPrintData("quick sort ", sortQuickData, ARRAY_COUNT(sortQuickData));
+
+		auto findGreaterFunction = [](const void* a, const void* b)
+		{
+			const int intA = *((int*)a);
+			const int intB = *((int*)b);
+			return intA > intB;
+		};
+
+		int findValue = 2;
+		int foundIdx = BinarySearch(&sortQuickData, ARRAY_COUNT(sortQuickData), &findValue, sizeof(int), findGreaterFunction);
+		printf("Binary search found at idx:%d!\n", foundIdx);
 	}
 }
 
