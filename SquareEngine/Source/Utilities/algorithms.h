@@ -29,27 +29,72 @@
 
 namespace Utilities
 {
-	inline void BubbleSort(void* data, 
-		const size_t dataCount, const size_t dataBlockSize, bool (*sortFunction)(void* data0, void* data1))
+	#define SortFuncDef bool (*sortFunction)(const void* data0, const void* data1)
+	#define LONG long int
+
+	inline void Swap(void* currentPtr, void* nextPtr, LONG dataBlockSize)
 	{
-		for(size_t i = 0; i < dataCount-1; i++)
+		void* cachedCurrentData = new char[dataBlockSize];
+		memcpy(cachedCurrentData, currentPtr, dataBlockSize);
+
+		memcpy(currentPtr, nextPtr, dataBlockSize);
+		memcpy(nextPtr, cachedCurrentData, dataBlockSize);
+
+		delete[] cachedCurrentData;
+	}
+
+	inline LONG QuickSortPartition(void* data,
+		const LONG startIdx, const LONG endIdx, const LONG dataBlockSize, SortFuncDef)
+	{
+		auto pivotPtr = (char*)data + (endIdx * dataBlockSize);
+		LONG i = (startIdx - 1);
+
+		for(LONG j = startIdx; j <= endIdx - 1; j++)
+		{
+			auto currentJPtr = (char*)data + (j * dataBlockSize);
+
+			if(sortFunction(currentJPtr, pivotPtr))
+			{
+				i++;
+				auto currentIPtr = (char*)data + (i * dataBlockSize);
+				Swap(currentIPtr, currentJPtr, dataBlockSize);
+			}
+		}
+
+		auto nextPtr = (char*)data + ((i + 1) * dataBlockSize);
+		auto endPtr = (char*)data + (endIdx * dataBlockSize);
+		Swap(nextPtr, endPtr, dataBlockSize);
+		return (i + 1);
+	}
+
+	inline void QuickSort(void* data,
+		const LONG startIdx, const LONG endIdx, const LONG dataBlockSize, SortFuncDef)
+	{
+		if(startIdx < endIdx)
+		{
+			LONG pivotIdx = QuickSortPartition(data, startIdx, endIdx, dataBlockSize, sortFunction);
+			QuickSort(data, startIdx, pivotIdx - 1, dataBlockSize, sortFunction); // Left
+			QuickSort(data, pivotIdx + 1, endIdx, dataBlockSize, sortFunction); // Right
+		}
+	}
+
+	inline void BubbleSort(void* data, 
+		const LONG dataCount, const LONG dataBlockSize, SortFuncDef)
+	{
+		const LONG lastIdx = dataCount - 1;
+
+		for(LONG i = 0; i < lastIdx; i++)
 		{
 			bool anySwapped = false;
 
-			for(size_t j = 0; j < dataCount - i - 1; j++)
+			for(LONG j = 0; j < (dataCount - 1) - i; j++)
 			{
 				auto currentPtr = (char*)data + (j * dataBlockSize);
 				auto nextPtr = (char*)data + ((j + 1) * dataBlockSize);
 
-				if(sortFunction(currentPtr, nextPtr))
+				if(!sortFunction(currentPtr, nextPtr))
 				{
-					void* cachedCurrentData = new char[dataBlockSize];
-					memcpy(cachedCurrentData, currentPtr, dataBlockSize);
-
-					memcpy(currentPtr, nextPtr, dataBlockSize);
-					memcpy(nextPtr, cachedCurrentData, dataBlockSize);
-
-					delete[] cachedCurrentData;
+					Swap(currentPtr, nextPtr, dataBlockSize);
 					anySwapped = true;
 				}
 			}
@@ -74,17 +119,20 @@ namespace Utilities
 
 	inline void AlgorithmTesting()
 	{
-		auto sortFunc = [](void* a, void* b)
+		auto sortFunc = [](const void* a, const void* b)
 		{
-			const int value0 = *((int*)a);
-			const int value1 = *((int*)b);
-			return value0 > value1;
+			const int intA = *((int*)a);
+			const int intB = *((int*)b);
+			return intA < intB;
 		};
 
-		int sortData[] = { 4, 1, 0, 3, 2, 5 };
+		int sortBubbleData[] = { 4, 1, 0, 3, 2, 5 };
+		Utilities::BubbleSort(&sortBubbleData, ARRAY_COUNT(sortBubbleData), sizeof(int), sortFunc);
+		AlgorithmPrintData("bubble sort ", sortBubbleData, ARRAY_COUNT(sortBubbleData));
 
-		Utilities::BubbleSort(&sortData, ARRAY_COUNT(sortData), sizeof(int), sortFunc);
-		AlgorithmPrintData("bubble sort", sortData, ARRAY_COUNT(sortData));
+		int sortQuickData[] = { 4, 1, 0, 3, 2, 5 };
+		Utilities::QuickSort(&sortQuickData, 0, ARRAY_COUNT(sortQuickData) - 1, sizeof(int), sortFunc);
+		AlgorithmPrintData("quick sort ", sortQuickData, ARRAY_COUNT(sortQuickData));
 	}
 }
 
